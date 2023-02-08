@@ -1,0 +1,58 @@
+package io.github.driveindex.security
+
+import io.github.driveindex.core.util.fromGson
+import io.github.driveindex.dto.req.admin.LoginReqDto
+import io.github.driveindex.security.handler.IAuthenticationFailureHandler
+import io.github.driveindex.security.handler.IAuthenticationSuccessHandler
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import org.springframework.http.HttpMethod
+import org.springframework.security.authentication.AuthenticationServiceException
+import org.springframework.security.authentication.ProviderManager
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.AuthenticationException
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
+import org.springframework.security.web.util.matcher.RequestMatcher
+import org.springframework.stereotype.Component
+import java.io.IOException
+import java.nio.charset.StandardCharsets
+
+/**
+ * @author sgpublic
+ * @Date 2023/2/7 15:30
+ */
+@Component
+class PasswordOnlyAuthenticationProcessingFilter(
+    onSuccess: IAuthenticationSuccessHandler,
+    onFailed: IAuthenticationFailureHandler,
+    provider: IAuthenticationProvider
+): AbstractAuthenticationProcessingFilter(
+    object : RequestMatcher {
+        private val url = "/api/login"
+        private val method = HttpMethod.POST.name()
+        override fun matches(request: HttpServletRequest): Boolean {
+            return method == request.getMethod() && url.contentEquals(request.getRequestURI())
+        }
+
+        override fun matcher(request: HttpServletRequest): RequestMatcher.MatchResult? {
+            return if (matches(request)) RequestMatcher.MatchResult.match() else RequestMatcher.MatchResult.notMatch()
+        }
+    },
+    ProviderManager(provider)
+) {
+    init {
+        super.setAuthenticationSuccessHandler(onSuccess)
+        super.setAuthenticationFailureHandler(onFailed)
+    }
+
+    @Throws(AuthenticationException::class, IOException::class)
+    override fun attemptAuthentication(request: HttpServletRequest, response: HttpServletResponse?): Authentication? {
+        if ("POST" != request.method) {
+            throw AuthenticationServiceException("Authentication method not supported: " + request.getMethod())
+        }
+        val content = String(request.inputStream.readAllBytes(), StandardCharsets.UTF_8)
+        val dto: LoginReqDto = LoginReqDto::class.fromGson(content)
+        val token: PasswordOnlyToken = PasswordOnlyToken.unauthenticated(dto.password)
+        return authenticationManager.authenticate(token)
+    }
+}

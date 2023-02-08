@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: driveindex
+  sql:
+    init:
+      mode: always
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
