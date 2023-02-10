@@ -4,6 +4,7 @@ import io.github.driveindex.core.util.toGson
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import java.io.Serializable
 import java.nio.charset.StandardCharsets
 
 /**
@@ -14,10 +15,6 @@ class FailedResult private constructor(
     val code: Int,
     override val message: String
 ): RuntimeException(message) {
-    override fun toString(): String {
-        return toGson()
-    }
-
     companion object {
         val UNSUPPORTED_REQUEST = FailedResult(-400, "不支持的请求方式")
         val WRONG_PASSWORD = FailedResult(-401, "密码错误")
@@ -33,11 +30,11 @@ class FailedResult private constructor(
     }
 }
 
-fun HttpServletResponse.write(failed: FailedResult) {
+fun HttpServletResponse.write(result: Serializable) {
     characterEncoding = StandardCharsets.UTF_8.name()
     addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
     writer.use {
-        it.write(failed.toString())
+        it.write(result.toGson())
         it.flush()
     }
 }

@@ -49,9 +49,9 @@ private class Bootstrap(clazz: Class<*>) {
 
     fun setDebug(isDebug: Boolean): Bootstrap {
         if (isDebug) {
-            properties["spring.profile.active"] = "dev"
+            properties["spring.profiles.active"] = "dev"
         } else {
-            properties["spring.profile.active"] = "prod"
+            properties["spring.profiles.active"] = "prod"
         }
         return this
     }

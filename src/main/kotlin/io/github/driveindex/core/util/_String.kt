@@ -94,3 +94,7 @@ val Serializable.MD5_COMPRESSED: String get() {
 val Serializable.MD5_FULL_COMPRESSED: String get() {
     return BigInteger(MD5_FULL, 16).toString(32)
 }
+
+fun String.toJwtTag(time: Long): String {
+    return "$this,${time / 1000 * 1000}".MD5_FULL_COMPRESSED
+}

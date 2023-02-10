@@ -51,6 +51,8 @@ class SecurityConfig(
     }
 
     companion object {
+        const val JWT_TAG = "tag"
+
         const val ROLE_ADMIN = "ADMIN"
         val AUTH_ADMIN = listOf(SimpleGrantedAuthority("ROLE_$ROLE_ADMIN"))
     }
