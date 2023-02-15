@@ -1,0 +1,11 @@
+server:
+  port: 11511
+spring:
+  h2:
+    console:
+      enabled: true
+      settings:
+        trace: true
+      path: /h2
+  datasource:
+    url: jdbc:h2:mem:driveindex

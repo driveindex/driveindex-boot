@@ -1,8 +1,11 @@
 spring:
   application:
     name: driveindex
-  sql:
-    init:
-      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
   datasource:
     driver-class-name: org.h2.Driver
+  flyway:
+    locations: classpath:/flyway

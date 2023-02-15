@@ -31,15 +31,17 @@ dependencies {
     }
     implementation("org.springframework.boot:spring-boot-starter-security")
 
+
     implementation("com.dtflys.forest:forest-spring-boot-starter:1.5.28")
 
     implementation("com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:4.0.0")
     val springDoc = "1.6.11"
     implementation("org.springdoc:springdoc-openapi-security:$springDoc")
 
-    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
-//    runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     runtimeOnly("com.h2database:h2")
+    runtimeOnly("org.flywaydb:flyway-core:9.14.1")
 
     implementation("org.ini4j:ini4j:0.5.4")
     implementation("com.google.code.gson:gson")

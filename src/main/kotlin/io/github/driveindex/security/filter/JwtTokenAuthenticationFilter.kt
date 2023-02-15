@@ -3,6 +3,8 @@ package io.github.driveindex.security.filter
 import io.github.driveindex.Application
 import io.github.driveindex.core.ConfigManager
 import io.github.driveindex.core.util.log
+import io.github.driveindex.exception.FailedResult
+import io.github.driveindex.exception.write
 import io.github.driveindex.security.PasswordOnlyToken
 import io.github.driveindex.security.SecurityConfig
 import io.jsonwebtoken.JwtParser
@@ -42,26 +44,29 @@ class JwtTokenAuthenticationFilter: GenericFilterBean() {
                 return
             }
         }
-        (request.getHeader(SecurityConfig.Header) ?: "").takeIf {
+        val token = (request.getHeader(SecurityConfig.Header) ?: "").takeIf {
             it.isNotBlank() && it.startsWith("Bearer ")
-        }?.substring(7)?.let {
-            val password = ConfigManager.Password
-            try {
-                val claims = parser.parseClaimsJws(it).body
-                if (claims.expiration.before(Date())) {
-                    log.debug("token 过期")
-                    return@let
-                }
-                if (claims.issuer != Application.APPLICATION_BASE_NAME) {
-                    log.debug("未知的 token 签发者")
-                    return@let
-                }
+        }?.substring(7)
+        if (token == null) {
+            chain.doFilter(request, response)
+            return
+        }
+        val password = ConfigManager.Password
+        try {
+            val claims = parser.parseClaimsJws(token).body
+            if (claims.expiration.before(Date())) {
+                log.debug("token 过期")
+            } else if (claims.issuer != Application.APPLICATION_BASE_NAME) {
+                log.debug("未知的 token 签发者")
+            } else {
                 SecurityContextHolder.getContext().authentication =
                         PasswordOnlyToken.authenticated(password, SecurityConfig.AUTH_ADMIN)
-            } catch (e: Exception) {
-                log.debug("jwt 未知错误", e)
+                chain.doFilter(request, response)
+                return
             }
+        } catch (e: Exception) {
+            log.debug("jwt 未知错误", e)
         }
-        chain.doFilter(request, response)
+        response.write(FailedResult.ExpiredToken)
     }
 }

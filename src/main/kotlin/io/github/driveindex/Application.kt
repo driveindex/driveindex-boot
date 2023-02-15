@@ -3,13 +3,15 @@ package io.github.driveindex
 import io.github.driveindex.core.ConfigManager
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import java.util.*
+import kotlin.collections.HashMap
 
 
 @SpringBootApplication
 class Application {
     companion object {
         const val APPLICATION_BASE_NAME = "DriveIndex"
-        const val APPLICATION_BASE_NAME_LOWER = "driveindex"
+        val APPLICATION_BASE_NAME_LOWER = APPLICATION_BASE_NAME.lowercase(Locale.getDefault())
 
         @JvmStatic
         fun main(args: Array<String>) {
@@ -42,7 +44,7 @@ private class Bootstrap(clazz: Class<*>) {
     ): Bootstrap {
         properties["spring.datasource.username"] = dbUsername
         properties["spring.datasource.password"] = dbPassword
-        properties["spring.datasource.url"] = "jdbc:h2:file:$dbPath/driveindex"
+        properties["spring.datasource.url"] = "jdbc:h2:file:$dbPath/${Application.APPLICATION_BASE_NAME_LOWER}"
         return this
     }
 

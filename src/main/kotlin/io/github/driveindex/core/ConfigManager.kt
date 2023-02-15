@@ -40,7 +40,7 @@ class ConfigManager {
         )
 
         private const val SectionSql = "sql"
-        val SqlUsername by IniVal.New(SectionSql, "username", "")
+        val SqlUsername by IniVal.New(SectionSql, "username", Application.APPLICATION_BASE_NAME_LOWER)
         val SqlPassword by IniVal.New(SectionSql, "password", "")
         val SqlDatabasePath by IniVal.New(SectionSql, "path", "./data")
 

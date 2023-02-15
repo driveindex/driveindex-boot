@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.GsonHttpMessageConverter
-import java.lang.reflect.Type
 import kotlin.reflect.KClass
 
 private val GSON: Gson = GsonBuilder()
