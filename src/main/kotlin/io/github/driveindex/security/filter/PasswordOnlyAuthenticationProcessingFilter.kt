@@ -1,7 +1,9 @@
-package io.github.driveindex.security
+package io.github.driveindex.security.filter
 
 import io.github.driveindex.core.util.fromGson
 import io.github.driveindex.dto.req.admin.LoginReqDto
+import io.github.driveindex.security.IAuthenticationProvider
+import io.github.driveindex.security.PasswordOnlyToken
 import io.github.driveindex.security.handler.IAuthenticationFailureHandler
 import io.github.driveindex.security.handler.IAuthenticationSuccessHandler
 import jakarta.servlet.http.HttpServletRequest
@@ -31,7 +33,7 @@ class PasswordOnlyAuthenticationProcessingFilter(
         private val url = "/api/login"
         private val method = HttpMethod.POST.name()
         override fun matches(request: HttpServletRequest): Boolean {
-            return method == request.getMethod() && url.contentEquals(request.getRequestURI())
+            return method == request.method && url.contentEquals(request.requestURI)
         }
 
         override fun matcher(request: HttpServletRequest): RequestMatcher.MatchResult? {
@@ -48,7 +50,7 @@ class PasswordOnlyAuthenticationProcessingFilter(
     @Throws(AuthenticationException::class, IOException::class)
     override fun attemptAuthentication(request: HttpServletRequest, response: HttpServletResponse?): Authentication? {
         if ("POST" != request.method) {
-            throw AuthenticationServiceException("Authentication method not supported: " + request.getMethod())
+            throw AuthenticationServiceException("Authentication method not supported: " + request.method)
         }
         val content = String(request.inputStream.readAllBytes(), StandardCharsets.UTF_8)
         val dto: LoginReqDto = LoginReqDto::class.fromGson(content)

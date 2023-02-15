@@ -1,8 +1,8 @@
 package io.github.driveindex.controller
 
 import io.github.driveindex.core.util.log
+import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.exception.FailedResult
-import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -16,8 +16,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 class ExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler(FailedResult::class)
-    fun handleFailedResult(e: FailedResult, resp: HttpServletResponse): FailedResult {
+    fun handleFailedResult(e: FailedResult): RespResult<Nothing> {
         log.debug("响应错误信息", e)
-        return e
+        return RespResult(e.code, e.message)
+    }
+
+    @ExceptionHandler(NotImplementedError::class)
+    fun handleNotImplementedError(e: NotImplementedError): RespResult<Nothing> {
+        return handleFailedResult(FailedResult.NotImplementationError)
     }
 }

@@ -1,9 +1,21 @@
-# DriveIndex-Cloud
+iveIndex 后端的 SpringBoot 实现。
 
-这里是 DriveIndex 后端的 SpringCloud 实现，支持 SpringBoot 单体部署。
+## 使用
+
+使用以下命令启动应用：
+
+```shell
+java -jar driveindex.jar
+```
+
+可附加参数指定配置文件：
+
+```shell
+java -jar driveindex.jar --config="./config/driveindex.ini"
+```
 
 ## 开发环境
 
 + IDE：JetBrains IDEA Ultimate 2022.3.2
-+ Java：JDK 17.0.4.1
-+ Database：MariaDB
++ Java：JDK 17.0.6
++ Database：H2

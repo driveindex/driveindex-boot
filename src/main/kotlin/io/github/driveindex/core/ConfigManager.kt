@@ -12,6 +12,7 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.*
 import kotlin.reflect.KProperty
+import kotlin.system.exitProcess
 
 /**
  * @author sgpublic
@@ -24,6 +25,14 @@ class ConfigManager {
         val Port by IniVal.New(SectionCommon, "port", 11411)
         val Debug by IniVal.New(SectionCommon, "debug", false)
         val LogPath by IniVal.New(SectionCommon, "log-dir", "./log")
+        var CorsOrigins by IniVar.New(SectionCommon, "cors_origin", "")
+        fun getCorsOrigins(): List<String>? {
+            if (CorsOrigins.isBlank()) {
+                return null
+            }
+            return CorsOrigins.replace(" ", "").split(";")
+        }
+        var DeltaTrackingTick by IniVar.New(SectionCommon, "delta_tracking", 5)
 
         private const val SectionAdmin = "admin"
         var Password by IniVar.New(
@@ -33,8 +42,7 @@ class ConfigManager {
         private const val SectionSql = "sql"
         val SqlUsername by IniVal.New(SectionSql, "username", "")
         val SqlPassword by IniVal.New(SectionSql, "password", "")
-        val SqlDatabaseName by IniVal.New(SectionSql, "database", "driveindex")
-        val SqlDatabaseHost by IniVal.New(SectionSql, "host", "localhost:3306")
+        val SqlDatabasePath by IniVal.New(SectionSql, "path", "./data")
 
         private const val SectionJwt = "jwt"
         private val TokenSecurityKey by IniVal.New(
@@ -54,18 +62,13 @@ class ConfigManager {
         }
 
         val TokenExpired by IniVal.New(
-            SectionJwt, "security", 3600000L
+            SectionJwt, "security", 3600L
         )
 
 
-        private const val SectionCache = "cache"
-        var DeltaTrackingTick by IniVar.New(SectionCache, "delta_tracking", 5)
 
 
-
-
-        private const val CONFIG_NAME = "driveindex.ini"
-        private var config = File("./config", CONFIG_NAME)
+        private var config = File("./config", "driveindex.ini")
         private val ini: Wini = Wini()
 
         init {
@@ -83,9 +86,13 @@ class ConfigManager {
         ini.file = config
     }
 
-    @Value("\${driveindex.config:./conf}")
-    fun setConfigFile(path: String?) {
-        config = File(path, CONFIG_NAME)
+    @Value("\${config:./config/driveindex.ini}")
+    fun setConfigFile(path: String) {
+        config = File(path)
+        if (!config.isFile) {
+            log.error("配置文件不可用：$path")
+            exitProcess(-1)
+        }
         val configPath: String = try {
             config.canonicalPath
         } catch (e: IOException) {

@@ -1,10 +1,10 @@
-package io.github.driveindex.security.jwt
+package io.github.driveindex.security.filter
 
 import io.github.driveindex.Application
 import io.github.driveindex.core.ConfigManager
 import io.github.driveindex.core.util.log
-import io.github.driveindex.exception.FailedResult
-import io.github.driveindex.exception.write
+import io.github.driveindex.security.PasswordOnlyToken
+import io.github.driveindex.security.SecurityConfig
 import io.jsonwebtoken.JwtParser
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
@@ -13,10 +13,12 @@ import jakarta.servlet.ServletRequest
 import jakarta.servlet.ServletResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.GenericFilterBean
 import java.security.Key
 import java.util.*
+
 
 /**
  * @author sgpublic
@@ -40,9 +42,10 @@ class JwtTokenAuthenticationFilter: GenericFilterBean() {
                 return
             }
         }
-        request.getHeader("Authentication").takeIf {
-            it.isNotBlank()
-        }?.let {
+        (request.getHeader(SecurityConfig.Header) ?: "").takeIf {
+            it.isNotBlank() && it.startsWith("Bearer ")
+        }?.substring(7)?.let {
+            val password = ConfigManager.Password
             try {
                 val claims = parser.parseClaimsJws(it).body
                 if (claims.expiration.before(Date())) {
@@ -53,11 +56,12 @@ class JwtTokenAuthenticationFilter: GenericFilterBean() {
                     log.debug("未知的 token 签发者")
                     return@let
                 }
-                chain.doFilter(request, response)
+                SecurityContextHolder.getContext().authentication =
+                        PasswordOnlyToken.authenticated(password, SecurityConfig.AUTH_ADMIN)
             } catch (e: Exception) {
                 log.debug("jwt 未知错误", e)
             }
         }
-        response.write(FailedResult.EXPIRED_TOKEN)
+        chain.doFilter(request, response)
     }
 }

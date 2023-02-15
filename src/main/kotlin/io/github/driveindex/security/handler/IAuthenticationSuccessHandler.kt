@@ -37,7 +37,7 @@ class IAuthenticationSuccessHandler: AuthenticationSuccessHandler {
             return@let Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(Date(now))
-                .setExpiration(Date(now + ConfigManager.TokenExpired))
+                .setExpiration(Date(now + ConfigManager.TokenExpired * 1000))
                 .signWith(secretKey)
                 .compact()
         }

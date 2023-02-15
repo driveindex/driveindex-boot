@@ -4,21 +4,21 @@ import io.github.driveindex.core.ConfigManager
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 
+
 @SpringBootApplication
 class Application {
     companion object {
         const val APPLICATION_BASE_NAME = "DriveIndex"
-        const val APPLICATION_BASE_NAME_LOWER = "driveidnex"
+        const val APPLICATION_BASE_NAME_LOWER = "driveindex"
 
         @JvmStatic
         fun main(args: Array<String>) {
             Bootstrap(Application::class.java)
                 .setPort(ConfigManager.Port)
                 .setDatasource(
-                    ConfigManager.SqlDatabaseName,
-                    ConfigManager.SqlDatabaseHost,
-                    ConfigManager.SqlUsername,
-                    ConfigManager.SqlPassword
+                        ConfigManager.SqlDatabasePath,
+                        ConfigManager.SqlUsername,
+                        ConfigManager.SqlPassword
                 )
                 .setDebug(ConfigManager.Debug)
                 .setLogPath(ConfigManager.LogPath)
@@ -38,12 +38,11 @@ private class Bootstrap(clazz: Class<*>) {
     }
 
     fun setDatasource(
-        dbName: String, dbHost: String,
-        dbUsername: String, dbPassword: String
+            dbPath: String, dbUsername: String, dbPassword: String
     ): Bootstrap {
         properties["spring.datasource.username"] = dbUsername
         properties["spring.datasource.password"] = dbPassword
-        properties["spring.datasource.url"] = "jdbc:mariadb://$dbHost/$dbName"
+        properties["spring.datasource.url"] = "jdbc:h2:file:$dbPath/driveindex"
         return this
     }
 

@@ -1,8 +1,13 @@
 package io.github.driveindex.controller
 
+import io.github.driveindex.core.ConfigManager
+import io.github.driveindex.dto.common.admin.CommonSettings
 import io.github.driveindex.dto.req.admin.LoginReqDto
 import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.admin.LoginRespDto
+import io.github.driveindex.dto.resp.resp
+import io.github.driveindex.exception.FailedResult
+import io.github.driveindex.security.SecurityConfig
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -26,7 +31,7 @@ class AdminController {
     @Operation(
         summary = "token 有效性检查",
         description = "检查 token 是否有效",
-        security = [SecurityRequirement(name = "Authentication")]
+        security = [SecurityRequirement(name = SecurityConfig.Header)]
     )
     @GetMapping("/api/admin/token_state")
     fun checkToken(): RespResult<Nothing> {
@@ -39,5 +44,29 @@ class AdminController {
         @RequestBody dto: LoginReqDto
     ): RespResult<LoginRespDto> {
         throw BadCredentialsException("use authentication provider instead.")
+    }
+
+
+    @Operation(summary = "常规设置", description = "常规设置")
+    @GetMapping("/api/admin/common")
+    fun getCommonSettings(): RespResult<CommonSettings> {
+        return CommonSettings(
+                deltaTick = ConfigManager.DeltaTrackingTick,
+                corsOrigin = ConfigManager.CorsOrigins,
+        ).resp()
+    }
+
+    @Operation(summary = "常规设置", description = "常规设置")
+    @PostMapping("/api/admin/common")
+    fun setCommonSettings(
+            @RequestBody dto: CommonSettings
+    ): RespResult<Nothing> {
+        if (dto.deltaTick < 0) {
+            throw FailedResult.CommonSettings.DeltaTrackDuration
+        }
+        ConfigManager.DeltaTrackingTick = dto.deltaTick
+        ConfigManager.CorsOrigins = dto.corsOrigin
+        SecurityConfig.updateDownloadCors()
+        return RespResult.SAMPLE
     }
 }

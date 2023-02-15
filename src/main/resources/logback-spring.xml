@@ -18,9 +18,7 @@
 
     <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!--自定义过滤器，自动判断 debug 环境-->
-        <filter class="io.github.driveindex.core.logback.filter.ConsoleFilter">
-            <profileActive>${profileActive}</profileActive>
-        </filter>
+        <filter class="io.github.driveindex.core.logback.filter.ConsoleFilter" />
         <!--设置以 html 方式输出日志-->
         <file>${log.path}/driveindex.log</file>
         <!--设置日志分段-->

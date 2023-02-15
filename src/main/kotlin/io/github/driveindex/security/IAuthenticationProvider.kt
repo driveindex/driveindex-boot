@@ -15,10 +15,9 @@ import org.springframework.stereotype.Component
 class IAuthenticationProvider: AuthenticationProvider {
     @Throws(AuthenticationException::class)
     override fun authenticate(authentication: Authentication): Authentication? {
-        assert(authentication is PasswordOnlyToken)
-        val token = authentication as PasswordOnlyToken
-        if (token.credentials == ConfigManager.Password) {
-            return PasswordOnlyToken.authenticated(token.credentials, SecurityConfig.AUTH_ADMIN)
+        authentication as PasswordOnlyToken
+        if (authentication.credentials == ConfigManager.Password) {
+            return PasswordOnlyToken.authenticated(authentication.credentials, SecurityConfig.AUTH_ADMIN)
         }
         throw WrongPasswordException()
     }

@@ -23,9 +23,9 @@ class IAuthenticationEntryPoint : AuthenticationEntryPoint {
     ) {
         log.debug("登录失败", authException)
         if (authException is WrongPasswordException) {
-            response.write(FailedResult.WRONG_PASSWORD)
+            response.write(FailedResult.WrongPassword)
         } else {
-            response.write(FailedResult.ANONYMOUS_DENIED)
+            response.write(FailedResult.AnonymousDenied)
         }
     }
 }

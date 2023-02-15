@@ -5,25 +5,24 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.filter.Filter
 import ch.qos.logback.core.spi.FilterReply
 import io.github.driveindex.Application
-import org.springframework.beans.factory.annotation.Value
+import io.github.driveindex.core.ConfigManager
 
 /**
  * @author sgpublic
  * @Date 2022/8/5 18:38
  */
 class ConsoleFilter : Filter<ILoggingEvent>() {
-    private var self = Level.INFO
-    private var out = Level.WARN
+    private val self: Level
+    private val out: Level
 
-    @Value("\${spring.profiles.active}")
-    fun setProfileActive(profile: String) {
-        val check = "dev" != profile
+    init {
+        val check = !ConfigManager.Debug
         self = if (check) Level.INFO else Level.DEBUG
         out = if (check) Level.WARN else Level.INFO
     }
 
     override fun decide(event: ILoggingEvent): FilterReply {
         val target = if (event.loggerName.startsWith(Application::class.java.packageName)) self else out
-        return if (event.level.isGreaterOrEqual(target)) FilterReply.NEUTRAL else FilterReply.DENY
+        return if (event.level.isGreaterOrEqual(target)) FilterReply.ACCEPT else FilterReply.DENY
     }
 }
