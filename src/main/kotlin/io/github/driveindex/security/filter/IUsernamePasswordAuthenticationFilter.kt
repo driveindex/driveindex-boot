@@ -3,7 +3,7 @@ package io.github.driveindex.security.filter
 import io.github.driveindex.core.util.fromGson
 import io.github.driveindex.dto.req.admin.LoginReqDto
 import io.github.driveindex.security.IAuthenticationProvider
-import io.github.driveindex.security.PasswordOnlyToken
+import io.github.driveindex.security.UserPasswordToken
 import io.github.driveindex.security.handler.IAuthenticationFailureHandler
 import io.github.driveindex.security.handler.IAuthenticationSuccessHandler
 import jakarta.servlet.http.HttpServletRequest
@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets
  * @Date 2023/2/7 15:30
  */
 @Component
-class PasswordOnlyAuthenticationProcessingFilter(
+class IUsernamePasswordAuthenticationFilter(
     onSuccess: IAuthenticationSuccessHandler,
     onFailed: IAuthenticationFailureHandler,
     provider: IAuthenticationProvider
@@ -54,7 +54,7 @@ class PasswordOnlyAuthenticationProcessingFilter(
         }
         val content = String(request.inputStream.readAllBytes(), StandardCharsets.UTF_8)
         val dto: LoginReqDto = LoginReqDto::class.fromGson(content)
-        val token: PasswordOnlyToken = PasswordOnlyToken.unauthenticated(dto.password)
+        val token = UserPasswordToken(dto.username, dto.password)
         return authenticationManager.authenticate(token)
     }
 }

@@ -21,6 +21,6 @@ class IAccessDeniedHandler : AccessDeniedHandler {
         response: HttpServletResponse,
         accessDeniedException: AccessDeniedException
     ) {
-        response.write(FailedResult.AccessDenied)
+        response.write(FailedResult.Auth.AccessDenied)
     }
 }

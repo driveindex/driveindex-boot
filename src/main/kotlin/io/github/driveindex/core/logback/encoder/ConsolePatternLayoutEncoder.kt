@@ -12,6 +12,7 @@ class ConsolePatternLayoutEncoder : PatternLayoutEncoder() {
     companion object {
         init {
             PatternLayout.DEFAULT_CONVERTER_MAP["trace"] = TraceConverter::class.java.name
+            PatternLayout.DEFAULT_CONVERTER_MAP["fulltrace"] = TraceConverter::class.java.name
         }
     }
 }

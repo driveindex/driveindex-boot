@@ -8,6 +8,9 @@ import java.io.Serializable
  * @Date 2023/2/7 15:33
  */
 data class LoginReqDto(
-    @field:Schema(description = "管理员密码", required = true)
-    val password: String
+    @field:Schema(description = "用户密码", required = true)
+    val username: String,
+
+    @field:Schema(description = "用户员密码", required = true)
+    val password: String,
 ): Serializable

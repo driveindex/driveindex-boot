@@ -3,10 +3,13 @@ package io.github.driveindex.security.filter
 import io.github.driveindex.Application
 import io.github.driveindex.core.ConfigManager
 import io.github.driveindex.core.util.log
+import io.github.driveindex.core.util.toJwtTag
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.exception.write
-import io.github.driveindex.security.PasswordOnlyToken
+import io.github.driveindex.h2.dao.UserDao
 import io.github.driveindex.security.SecurityConfig
+import io.github.driveindex.security.UserPasswordToken
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.JwtParser
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
@@ -27,7 +30,9 @@ import java.util.*
  * @Date 2023/2/8 9:28
  */
 @Component
-class JwtTokenAuthenticationFilter: GenericFilterBean() {
+class JwtTokenAuthenticationFilter(
+    private val user: UserDao
+): GenericFilterBean() {
     private val parser: JwtParser
     init {
         val secretKey: Key = Keys.hmacShaKeyFor(ConfigManager.getTokenSecurityKey())
@@ -39,7 +44,9 @@ class JwtTokenAuthenticationFilter: GenericFilterBean() {
         response as HttpServletResponse
 
         request.requestURI.let {
-            if (it.startsWith("/api/login") || !it.startsWith("/api/admin")) {
+            if (it.startsWith("/api/login") ||
+                (!it.startsWith("/api/admin") &&
+                !it.startsWith("/api/user"))) {
                 chain.doFilter(request, response)
                 return
             }
@@ -51,7 +58,6 @@ class JwtTokenAuthenticationFilter: GenericFilterBean() {
             chain.doFilter(request, response)
             return
         }
-        val password = ConfigManager.Password
         try {
             val claims = parser.parseClaimsJws(token).body
             if (claims.expiration.before(Date())) {
@@ -59,14 +65,41 @@ class JwtTokenAuthenticationFilter: GenericFilterBean() {
             } else if (claims.issuer != Application.APPLICATION_BASE_NAME) {
                 log.debug("未知的 token 签发者")
             } else {
-                SecurityContextHolder.getContext().authentication =
-                        PasswordOnlyToken.authenticated(password, SecurityConfig.AUTH_ADMIN)
-                chain.doFilter(request, response)
-                return
+                onValidToken(claims)?.let {
+                    SecurityContextHolder.getContext().authentication = it
+                    chain.doFilter(request, response)
+                    return
+                }
             }
+        } catch (e: FailedResult) {
+            response.write(e)
         } catch (e: Exception) {
-            log.debug("jwt 未知错误", e)
+            log.debug("jwt 认证错误", e)
+            response.write(FailedResult.Auth.ExpiredToken)
         }
-        response.write(FailedResult.ExpiredToken)
+    }
+
+    private fun onValidToken(claims: Claims): UserPasswordToken? {
+        val username: String = (claims[SecurityConfig.JWT_USERNAME] as String?)
+            ?: throw IllegalArgumentException("no username found in jwt token")
+        val entity = user.getValidUser(username)
+            ?: throw IllegalStateException("user not found: $username")
+
+        if (!entity.enable) {
+            throw FailedResult.Auth.UserDisabled
+        }
+
+        val tag: String = (claims[SecurityConfig.JWT_TAG] as String?)
+            ?: throw IllegalArgumentException("no tag found in jwt token")
+        if (entity.password.toJwtTag(claims.issuedAt.time) != tag) {
+            log.debug("密码被修改，强制 token 失效")
+            return null
+        }
+        return UserPasswordToken(
+            entity.username, entity.password,
+            entity.role.getGrantedAuthority()
+        ).also {
+            it.details = entity
+        }
     }
 }

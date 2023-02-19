@@ -32,7 +32,7 @@
         </rollingPolicy>
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
             <layout class="ch.qos.logback.classic.PatternLayout">
-                <pattern>%d{yyy-MM-dd HH:mm:ss.SSS} %-5level \(%trace\): %msg%n</pattern>
+                <pattern>%d{yyy-MM-dd HH:mm:ss.SSS} %-5level \(%fulltrace\): %msg%n</pattern>
             </layout>
         </encoder>
     </appender>

@@ -1,14 +1,21 @@
 package io.github.driveindex
 
 import io.github.driveindex.core.ConfigManager
+import jakarta.annotation.PostConstruct
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.scheduling.annotation.EnableScheduling
 import java.util.*
-import kotlin.collections.HashMap
 
-
+@EnableScheduling
 @SpringBootApplication
 class Application {
+    @PostConstruct
+    fun setup() {
+
+
+    }
+
     companion object {
         const val APPLICATION_BASE_NAME = "DriveIndex"
         val APPLICATION_BASE_NAME_LOWER = APPLICATION_BASE_NAME.lowercase(Locale.getDefault())

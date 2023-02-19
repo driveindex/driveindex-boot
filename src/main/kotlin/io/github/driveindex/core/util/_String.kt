@@ -81,20 +81,6 @@ val Serializable.MD5_FULL: String get() {
     return toGson().MD5_FULL
 }
 
-/**
- * 8 位 MD5，由 16 位 MD5 转换为 32 进制得来
- */
-val Serializable.MD5_COMPRESSED: String get() {
-    return BigInteger(MD5, 16).toString(32)
-}
-
-/**
- * 8 位 MD5，由 16 位 MD5 转换为 32 进制得来
- */
-val Serializable.MD5_FULL_COMPRESSED: String get() {
-    return BigInteger(MD5_FULL, 16).toString(32)
-}
-
 fun String.toJwtTag(time: Long): String {
-    return "$this,${time / 1000 * 1000}".MD5_FULL_COMPRESSED
+    return "$this,${time / 1000 * 1000}".MD5_FULL
 }

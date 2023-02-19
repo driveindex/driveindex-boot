@@ -2,7 +2,6 @@ package io.github.driveindex.security
 
 import io.github.driveindex.core.util.log
 import io.github.driveindex.exception.FailedResult
-import io.github.driveindex.exception.WrongPasswordException
 import io.github.driveindex.exception.write
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -22,8 +21,8 @@ class IAuthenticationEntryPoint : AuthenticationEntryPoint {
         authException: AuthenticationException
     ) {
         log.debug("登录失败", authException)
-        if (authException is WrongPasswordException) {
-            response.write(FailedResult.WrongPassword)
+        if (authException is IAuthenticationProvider.UserException) {
+            response.write(authException.result)
         } else {
             response.write(FailedResult.AnonymousDenied)
         }

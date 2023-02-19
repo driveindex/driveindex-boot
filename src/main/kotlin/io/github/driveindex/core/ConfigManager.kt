@@ -24,8 +24,8 @@ class ConfigManager {
         private const val SectionCommon = "common"
         val Port by IniVal.New(SectionCommon, "port", 11411)
         val Debug by IniVal.New(SectionCommon, "debug", false)
-        val LogPath by IniVal.New(SectionCommon, "log-dir", "./log")
-        var CorsOrigins by IniVar.New(SectionCommon, "cors_origin", "")
+        val LogPath by IniVal.New(SectionCommon, "log-dir", "/var/log/driveindex")
+        var CorsOrigins by IniVar.New(SectionCommon, "cors-origin", "")
         fun getCorsOrigins(): List<String>? {
             if (CorsOrigins.isBlank()) {
                 return null
