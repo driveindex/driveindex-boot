@@ -9,23 +9,23 @@ import java.util.UUID
 data class UserEntity(
     @Id
     @Column(name = "id")
-    val id: String = UUID.randomUUID().toString(),
+    val id: UUID = UUID.randomUUID(),
 
     @Column(name = "username")
-    val username: String,
+    var username: String,
 
     @Column(name = "password")
-    val password: String,
+    var password: String,
 
     @Column(name = "nick")
-    val nick: String = "",
+    var nick: String = "",
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     val role: UserRole = UserRole.USER,
 
     @Column(name = "enable")
-    val enable: Boolean = true,
+    var enable: Boolean = true,
 
     @Column(name = "delete_time")
     private var deleteTime: Long = -1

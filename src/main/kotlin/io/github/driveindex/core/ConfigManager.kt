@@ -1,6 +1,7 @@
 package io.github.driveindex.core
 
 import io.github.driveindex.Application
+import io.github.driveindex.core.util.MD5_FULL
 import io.github.driveindex.core.util.log
 import org.ini4j.Profile
 import org.ini4j.Wini
@@ -25,19 +26,6 @@ class ConfigManager {
         val Port by IniVal.New(SectionCommon, "port", 11411)
         val Debug by IniVal.New(SectionCommon, "debug", false)
         val LogPath by IniVal.New(SectionCommon, "log-dir", "/var/log/driveindex")
-        var CorsOrigins by IniVar.New(SectionCommon, "cors-origin", "")
-        fun getCorsOrigins(): List<String>? {
-            if (CorsOrigins.isBlank()) {
-                return null
-            }
-            return CorsOrigins.replace(" ", "").split(";")
-        }
-        var DeltaTrackingTick by IniVar.New(SectionCommon, "delta_tracking", 5)
-
-        private const val SectionAdmin = "admin"
-        var Password by IniVar.New(
-            SectionAdmin, "password", Application.APPLICATION_BASE_NAME_LOWER
-        )
 
         private const val SectionSql = "sql"
         val SqlUsername by IniVal.New(SectionSql, "username", Application.APPLICATION_BASE_NAME_LOWER)
@@ -45,9 +33,13 @@ class ConfigManager {
         val SqlDatabasePath by IniVal.New(SectionSql, "path", "./data")
 
         private const val SectionJwt = "jwt"
-        private val TokenSecurityKey by IniVal.New(
-            SectionJwt, "security", Application.APPLICATION_BASE_NAME_LOWER
-        )
+        val TokenSecurityKey by lazy {
+            var tmp by IniVar.New(SectionJwt, "security", "")
+            if (tmp.isBlank()) {
+                tmp = UUID.randomUUID().toString().MD5_FULL
+            }
+            return@lazy tmp
+        }
 
         fun getTokenSecurityKey(): ByteArray {
             var base = TokenSecurityKey.toByteArray(StandardCharsets.UTF_8)
@@ -103,7 +95,7 @@ class ConfigManager {
 
     class IniVar<TypeT>(section: String, key: String, defVal: TypeT, clazz: Class<TypeT>) :
         IniVal<TypeT>(section, key, defVal, clazz) {
-        operator fun setValue(companion: ConfigManager.Companion, property: KProperty<*>, value: TypeT) {
+        operator fun setValue(companion: Any?, property: KProperty<*>, value: TypeT) {
             getSection(section)?.let {
                 it[key] = toIni(value)
                 ini[section] = it
@@ -135,7 +127,7 @@ class ConfigManager {
             return BeanTool.getInstance().parse(origin, clazz) ?: devVal
         }
 
-        operator fun getValue(companion: ConfigManager.Companion, property: KProperty<*>): TypeT {
+        operator fun getValue(companion: Any?, property: KProperty<*>): TypeT {
             return try {
                 fromIni(getSection(section)?.get(key))
             } catch (e: Exception) {

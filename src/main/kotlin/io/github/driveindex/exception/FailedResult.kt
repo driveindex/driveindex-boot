@@ -20,6 +20,7 @@ class FailedResult private constructor(
         val UnsupportedRequest get() = FailedResult(-400, "不支持的请求方式")
         val AnonymousDenied get() = FailedResult(-405, "请登陆后再试")
         val NotFound get() = FailedResult(-404, "您请求的资源不存在")
+        val MissingBody get() = FailedResult(-400, "参数缺失")
 
         val ServiceUnavailable get() = FailedResult(-500, "服务不可用")
         val InternalServerError get() = FailedResult(-500, "服务器内部错误")
@@ -31,8 +32,10 @@ class FailedResult private constructor(
         return RespResult(code, message)
     }
 
-    object CommonSettings {
-        val DeltaTrackDuration get() = FailedResult(-10101, "文件同步间隔时间只能为正整数")
+    object UserSettings {
+        val PasswordNotMatched get() = FailedResult(-10101, "密码不匹配")
+        val PasswordLength get() = FailedResult(-10102, "密码至少 6 位")
+        val DeltaTrackDuration get() = FailedResult(-10201, "文件同步间隔时间只能为正整数")
     }
 
     object Auth {
@@ -41,6 +44,11 @@ class FailedResult private constructor(
         val UserDisabled get() = FailedResult(-402, "您的用户已被禁用，请联系管理员")
         val UserDeleted get() = FailedResult(-402, "您的用户已被删除，请联系管理员")
         val ExpiredToken get() = FailedResult(-402, "无效的 token")
+    }
+
+    object Client {
+        val NotFound get() = FailedResult(-404, "Client 不存在")
+        val TypeNotMatch get() = FailedResult(-404, "Client 类型不匹配")
     }
 }
 

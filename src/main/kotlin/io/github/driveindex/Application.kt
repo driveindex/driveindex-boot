@@ -4,8 +4,10 @@ import io.github.driveindex.core.ConfigManager
 import jakarta.annotation.PostConstruct
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.context.ApplicationContext
 import org.springframework.scheduling.annotation.EnableScheduling
 import java.util.*
+import kotlin.reflect.KClass
 
 @EnableScheduling
 @SpringBootApplication
@@ -13,16 +15,18 @@ class Application {
     @PostConstruct
     fun setup() {
 
-
     }
 
     companion object {
         const val APPLICATION_BASE_NAME = "DriveIndex"
         val APPLICATION_BASE_NAME_LOWER = APPLICATION_BASE_NAME.lowercase(Locale.getDefault())
 
+        private lateinit var context: ApplicationContext
+        val Context: ApplicationContext get() = context
+
         @JvmStatic
         fun main(args: Array<String>) {
-            Bootstrap(Application::class.java)
+            context = Bootstrap(Application::class.java)
                 .setPort(ConfigManager.Port)
                 .setDatasource(
                         ConfigManager.SqlDatabasePath,
@@ -32,6 +36,14 @@ class Application {
                 .setDebug(ConfigManager.Debug)
                 .setLogPath(ConfigManager.LogPath)
                 .run(args)
+        }
+
+        inline fun <reified T> getBean(): T {
+            return Context.getBean(T::class.java)
+        }
+
+        fun <T: Any> getBean(clazz: KClass<T>): T {
+            return Context.getBean(clazz.java)
         }
     }
 }
@@ -69,8 +81,8 @@ private class Bootstrap(clazz: Class<*>) {
         return this
     }
 
-    fun run(args: Array<String>) {
+    fun run(args: Array<String>): ApplicationContext {
         application.setDefaultProperties(properties)
-        application.run(*args)
+        return application.run(*args)
     }
 }

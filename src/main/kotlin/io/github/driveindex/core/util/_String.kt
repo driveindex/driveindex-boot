@@ -1,7 +1,6 @@
 package io.github.driveindex.core.util
 
 import java.io.Serializable
-import java.math.BigInteger
 import java.nio.charset.Charset
 import java.security.MessageDigest
 import java.util.*
@@ -18,15 +17,15 @@ fun String.isSimplifyChinese(): Boolean {
     return isChinese() && String(toByteArray(GB2312)) == this
 }
 
-val ByteArray.BASE_64: String get() {
-    return Base64.getEncoder().encodeToString(this)
+val String.TO_BASE64: String get() {
+    return Base64.getEncoder().encodeToString(toByteArray(Charsets.UTF_8))
 }
 
-val String.ORIGIN_BASE64: ByteArray get() {
-    return Base64.getDecoder().decode(this)
+val String.ORIGIN_BASE64: String get() {
+    return Base64.getDecoder().decode(this).toString(Charsets.UTF_8)
 }
 
-private val instance: MessageDigest get() = MessageDigest.getInstance("MD5")
+private val md5: MessageDigest get() = MessageDigest.getInstance("MD5")
 
 /**
  * 16 位 MD5
@@ -34,12 +33,15 @@ private val instance: MessageDigest get() = MessageDigest.getInstance("MD5")
 val String.MD5: String get() {
     return MD5_FULL.substring(5, 24)
 }
+val String.MD5_UPPER: String get() {
+    return MD5.uppercase()
+}
 
 /**
  * 32 位 MD5
  */
 val String.MD5_FULL: String get() {
-    val digest = instance.digest(toByteArray())
+    val digest = md5.digest(toByteArray())
     return StringBuffer().run {
         for (b in digest) {
             val i :Int = b.toInt() and 0xff
@@ -52,19 +54,8 @@ val String.MD5_FULL: String get() {
         toString()
     }
 }
-
-/**
- * 8 位 MD5，由 16 位 MD5 转换为 32 进制得来
- */
-val String.MD5_COMPRESSED: String get() {
-    return BigInteger(MD5, 16).toString(32)
-}
-
-/**
- * 8 位 MD5，由 16 位 MD5 转换为 32 进制得来
- */
-val String.MD5_FULL_COMPRESSED: String get() {
-    return BigInteger(MD5_FULL, 16).toString(32)
+val String.MD5_FULL_UPPER: String get() {
+    return MD5_FULL.uppercase()
 }
 
 /**
@@ -73,6 +64,9 @@ val String.MD5_FULL_COMPRESSED: String get() {
 val Serializable.MD5: String get() {
     return MD5_FULL.substring(5, 24)
 }
+val Serializable.MD5_UPPER: String get() {
+    return MD5.uppercase()
+}
 
 /**
  * 32 位 MD5
@@ -80,7 +74,59 @@ val Serializable.MD5: String get() {
 val Serializable.MD5_FULL: String get() {
     return toGson().MD5_FULL
 }
+val Serializable.MD5_FULL_UPPER: String get() {
+    return MD5_FULL.uppercase()
+}
 
 fun String.toJwtTag(time: Long): String {
     return "$this,${time / 1000 * 1000}".MD5_FULL
+}
+
+private val sha1: MessageDigest get() = MessageDigest.getInstance("SHA1")
+
+val String.SHA1: String get() {
+    val digest = sha1.digest(toByteArray())
+    return StringBuffer().run {
+        for (b in digest) {
+            val i :Int = b.toInt() and 0xff
+            var hexString = Integer.toHexString(i)
+            if (hexString.length < 2) {
+                hexString = "0$hexString"
+            }
+            append(hexString)
+        }
+        toString()
+    }
+}
+val String.SHA1_UPPER: String get() {
+    return SHA1.uppercase()
+}
+
+
+fun Map<String, Any>.joinToString(
+    separator: CharSequence = ", ", prefix: CharSequence = "",
+    postfix: CharSequence = "", limit: Int = -1,
+    truncated: CharSequence = "...",
+    transform: ((Map.Entry<String, Any>) -> String)? = null
+): String {
+    return entries.joinToString(
+        separator, prefix, postfix, limit, truncated
+    ) transform@{
+        return@transform transform?.invoke(it) ?: "${it.key}=${it.value}"
+    }
+}
+
+fun Map<String, Any>.joinToSortedString(
+    separator: CharSequence = ", ", prefix: CharSequence = "",
+    postfix: CharSequence = "", limit: Int = -1,
+    truncated: CharSequence = "...",
+    transform: ((Map.Entry<String, Any>) -> String)? = null
+): String {
+    return entries.sortedBy {
+        return@sortedBy it.key
+    }.joinToString(
+        separator, prefix, postfix, limit, truncated
+    ) transform@{
+        return@transform transform?.invoke(it) ?: "${it.key}=${it.value}"
+    }
 }

@@ -1,4 +1,4 @@
-package io.github.driveindex.dto.req.admin
+package io.github.driveindex.dto.req.auth
 
 import io.swagger.v3.oas.annotations.media.Schema
 import java.io.Serializable

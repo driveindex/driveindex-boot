@@ -1,7 +1,7 @@
 package io.github.driveindex.security.filter
 
 import io.github.driveindex.core.util.fromGson
-import io.github.driveindex.dto.req.admin.LoginReqDto
+import io.github.driveindex.dto.req.auth.LoginReqDto
 import io.github.driveindex.security.IAuthenticationProvider
 import io.github.driveindex.security.UserPasswordToken
 import io.github.driveindex.security.handler.IAuthenticationFailureHandler

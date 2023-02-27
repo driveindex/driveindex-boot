@@ -1,6 +1,6 @@
 package io.github.driveindex.controller
 
-import io.github.driveindex.dto.req.admin.LoginReqDto
+import io.github.driveindex.dto.req.auth.LoginReqDto
 import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.admin.LoginRespDto
 import io.github.driveindex.security.SecurityConfig

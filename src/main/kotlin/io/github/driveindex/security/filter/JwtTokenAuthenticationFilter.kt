@@ -58,24 +58,27 @@ class JwtTokenAuthenticationFilter(
             chain.doFilter(request, response)
             return
         }
+        val claims: Claims
         try {
-            val claims = parser.parseClaimsJws(token).body
-            if (claims.expiration.before(Date())) {
-                log.debug("token 过期")
-            } else if (claims.issuer != Application.APPLICATION_BASE_NAME) {
-                log.debug("未知的 token 签发者")
-            } else {
-                onValidToken(claims)?.let {
-                    SecurityContextHolder.getContext().authentication = it
-                    chain.doFilter(request, response)
-                    return
-                }
-            }
+            claims = parser.parseClaimsJws(token).body
         } catch (e: FailedResult) {
             response.write(e)
+            return
         } catch (e: Exception) {
             log.debug("jwt 认证错误", e)
             response.write(FailedResult.Auth.ExpiredToken)
+            return
+        }
+        if (claims.expiration.before(Date())) {
+            log.debug("token 过期")
+        } else if (claims.issuer != Application.APPLICATION_BASE_NAME) {
+            log.debug("未知的 token 签发者")
+        } else {
+            onValidToken(claims)?.let {
+                SecurityContextHolder.getContext().authentication = it
+                chain.doFilter(request, response)
+                return
+            }
         }
     }
 

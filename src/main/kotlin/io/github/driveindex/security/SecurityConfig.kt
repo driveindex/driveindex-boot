@@ -1,13 +1,12 @@
 package io.github.driveindex.security
 
 import io.github.driveindex.core.ConfigManager
-import io.github.driveindex.security.handler.IAccessDeniedHandler
-import io.github.driveindex.security.filter.JwtTokenAuthenticationFilter
 import io.github.driveindex.security.filter.IUsernamePasswordAuthenticationFilter
+import io.github.driveindex.security.filter.JwtTokenAuthenticationFilter
+import io.github.driveindex.security.handler.IAccessDeniedHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
-import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
@@ -37,12 +36,6 @@ class SecurityConfig(
                 allowedMethods = listOf(CorsConfiguration.ALL)
                 allowedOrigins = listOf(CorsConfiguration.ALL)
             })
-        } else {
-            registerCorsConfiguration("/api/admin/**", CorsConfiguration().apply {
-                allowedHeaders = listOf(Header)
-                allowedMethods = listOf(HttpMethod.GET.name(), HttpMethod.POST.name())
-            })
-            updateDownloadCors()
         }
         http.cors().configurationSource(corsConfigurationSource)
         http.csrf().disable()
@@ -71,13 +64,6 @@ class SecurityConfig(
         private fun registerCorsConfiguration(pattern: String, conf: CorsConfiguration): Companion {
             corsConfigurationSource.registerCorsConfiguration(pattern, conf)
             return this
-        }
-
-        fun updateDownloadCors() {
-            registerCorsConfiguration("/api/download", CorsConfiguration().apply {
-                allowedMethods = listOf(HttpMethod.GET.name())
-                allowedOrigins = ConfigManager.getCorsOrigins()
-            })
         }
     }
 }

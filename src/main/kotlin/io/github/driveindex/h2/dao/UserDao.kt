@@ -2,8 +2,10 @@ package io.github.driveindex.h2.dao
 
 import io.github.driveindex.h2.entity.UserEntity
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
 @Repository
 interface UserDao: JpaRepository<UserEntity, String> {
@@ -16,9 +18,13 @@ interface UserDao: JpaRepository<UserEntity, String> {
     @Query("from UserEntity where deleteTime>=0")
     fun getDeletedUsers(): List<UserEntity>
 
-    @Query("delete from UserEntity where deleteTime>=0 and deleteTime<:now")
+    @Modifying
+    @Transactional
+    @Query("delete UserEntity where deleteTime>=0 and deleteTime<:now")
     fun doRealDeleteUser(now: Long = System.currentTimeMillis())
 
-    @Query("delete from UserEntity where id in :ids")
+    @Modifying
+    @Transactional
+    @Query("delete UserEntity where id in :ids")
     fun doDeleteUser(ids: List<String>)
 }
