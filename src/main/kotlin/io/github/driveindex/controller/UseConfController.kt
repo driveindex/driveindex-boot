@@ -9,6 +9,7 @@ import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.admin.CommonSettingsRespDto
 import io.github.driveindex.dto.resp.resp
 import io.github.driveindex.exception.FailedResult
+import io.github.driveindex.h2.dao.ClientsDao
 import io.github.driveindex.module.Current
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 /**
@@ -25,7 +27,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @Tag(name = "用户接口")
 class UseConfController(
-    private val current: Current
+    private val current: Current,
+    private val clientsDao: ClientsDao,
 ) {
     @Operation(summary = "修改密码")
     @GetMapping("/api/user/password")
@@ -70,8 +73,14 @@ class UseConfController(
 
 
     @Operation(summary = "枚举 Client 配置", description = "获取所有 Client 配置")
-    @PostMapping("/api/user/client_list")
+    @GetMapping("/api/user/clients")
     fun listClients() {
+
+    }
+
+    @Operation(summary = "枚举 Client 配置", description = "获取所有 Client 配置")
+    @GetMapping("/api/user/accounts")
+    fun listAccount(@RequestParam("client_id") clientId: String) {
 
     }
 

@@ -32,7 +32,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
 
 
-    implementation("com.dtflys.forest:forest-spring-boot-starter:1.5.28")
+//    implementation("com.dtflys.forest:forest-spring-boot-starter:1.5.28")
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.1")
 
     implementation("com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:4.0.0")
     val springDoc = "1.6.11"

@@ -4,15 +4,26 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import java.util.Date
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(name = "account_onedrive")
 data class OneDriveAccountEntity(
     @Id
+    @Column(name = "id")
+    val id: UUID = UUID.randomUUID(),
+
     @Column(name = "client_id")
-    val id: UUID,
+    val parentClientId: UUID,
+
+    @Column(name = "azure_id")
+    val azureId: UUID,
+
+    @Column(name = "display_name")
+    val displayName: String,
+
+    @Column(name = "user_principal_name")
+    val userPrincipalName: String,
 
     @Column(name = "token_type")
     val tokenType: String,
@@ -21,7 +32,7 @@ data class OneDriveAccountEntity(
     val accessToken: String,
 
     @Column(name = "token_expire")
-    val tokenExpire: Date,
+    val tokenExpire: Long,
 
     @Column(name = "refresh_token")
     val refreshToken: String,

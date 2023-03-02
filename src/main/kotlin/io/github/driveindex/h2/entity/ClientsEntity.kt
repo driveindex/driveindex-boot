@@ -14,6 +14,9 @@ data class ClientsEntity(
     @Column(name = "client_id")
     val id: UUID = UUID.randomUUID(),
 
+    @Column(name = "name")
+    var name: String,
+
     @Column(name = "type")
     val type: ClientType,
 )
