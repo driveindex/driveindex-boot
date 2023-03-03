@@ -1,6 +1,8 @@
 package io.github.driveindex.controller
 
+import io.github.driveindex.client.ClientType
 import io.github.driveindex.core.util.SHA1
+import io.github.driveindex.core.util.addTo
 import io.github.driveindex.dto.req.user.ClientCreateReqDto
 import io.github.driveindex.dto.req.user.ClientEditReqDto
 import io.github.driveindex.dto.req.user.SetCommonReqDto
@@ -8,8 +10,10 @@ import io.github.driveindex.dto.req.user.SetPwdReqDto
 import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.admin.CommonSettingsRespDto
 import io.github.driveindex.dto.resp.resp
+import io.github.driveindex.dto.resp.user.ClientsDto
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.h2.dao.ClientsDao
+import io.github.driveindex.h2.dao.OneDriveClientDao
 import io.github.driveindex.module.Current
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 /**
  * @author sgpublic
@@ -29,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController
 class UseConfController(
     private val current: Current,
     private val clientsDao: ClientsDao,
+    private val oneDriveClientDao: OneDriveClientDao,
 ) {
     @Operation(summary = "修改密码")
     @GetMapping("/api/user/password")
@@ -74,13 +80,29 @@ class UseConfController(
 
     @Operation(summary = "枚举 Client 配置", description = "获取所有 Client 配置")
     @GetMapping("/api/user/clients")
-    fun listClients() {
-
+    fun listClients(): RespResult<List<ClientsDto<*>>> {
+        val list: ArrayList<ClientsDto<*>> = ArrayList()
+        for (entity in clientsDao.listByUser(current.User.id)) {
+            list.add(ClientsDto(
+                id = entity.id,
+                name = entity.name,
+                type = entity.type,
+                createAt = entity.createAt,
+                modifyAt = entity.modifyAt,
+                detail = when (entity.type) {
+                    ClientType.OneDrive ->
+                        oneDriveClientDao.getOneDriveClient(entity.id)
+                }
+            ))
+        }
+        return list.resp()
     }
 
     @Operation(summary = "枚举 Client 配置", description = "获取所有 Client 配置")
     @GetMapping("/api/user/accounts")
-    fun listAccount(@RequestParam("client_id") clientId: String) {
+    fun listAccount(@RequestParam("client_id") clientId: UUID) {
+        val client = clientsDao.getClient(clientId)
+            ?: throw FailedResult.Client.NotFound
 
     }
 
@@ -88,7 +110,7 @@ class UseConfController(
     @Operation(summary = "创建 Client")
     @PostMapping("/api/user/client")
     fun createClient(@RequestBody dto: ClientCreateReqDto): RespResult<Nothing> {
-        dto.type.create(dto.data)
+        dto.type.create(dto.name, dto.data)
         return RespResult.SAMPLE
     }
 

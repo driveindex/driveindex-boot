@@ -11,6 +11,12 @@ interface ClientsDao: JpaRepository<ClientsEntity, UUID> {
     @Query("from ClientsEntity where id=:id")
     fun getClient(id: UUID): ClientsEntity?
 
-    @Query("from ClientsEntity where name=:name")
-    fun findClient(name: String): ClientsEntity?
+    @Query("from ClientsEntity where createBy=:user and name=:name")
+    fun findByName(user: UUID, name: String): ClientsEntity?
+
+    @Query("select id from ClientsEntity where createBy=:user")
+    fun findByUser(user: UUID): List<UUID>
+
+    @Query("from ClientsEntity where createBy=:user")
+    fun listByUser(user: UUID): List<ClientsEntity>
 }

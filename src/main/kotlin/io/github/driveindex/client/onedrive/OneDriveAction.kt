@@ -10,9 +10,11 @@ import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.resp
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.feigh.AzurePortalClient
+import io.github.driveindex.h2.dao.AccountsDao
 import io.github.driveindex.h2.dao.ClientsDao
 import io.github.driveindex.h2.dao.OneDriveAccountDao
 import io.github.driveindex.h2.dao.OneDriveClientDao
+import io.github.driveindex.h2.entity.AccountsEntity
 import io.github.driveindex.h2.entity.ClientsEntity
 import io.github.driveindex.h2.entity.OneDriveAccountEntity
 import io.github.driveindex.h2.entity.OneDriveClientEntity
@@ -25,6 +27,7 @@ import java.util.*
 class OneDriveAction(
     private val current: Current,
     override val clientDao: ClientsDao,
+    private val accountDao: AccountsDao,
     private val onedriveClientDao: OneDriveClientDao,
     private val oneDriveAccountDao: OneDriveAccountDao,
 ): ClientAction {
@@ -91,42 +94,66 @@ class OneDriveAction(
         )
 
         val me = client.endPoint.Graph.Me(token.tokenStr)
-        oneDriveAccountDao.findByAzureId(me.id)
-            ?: throw FailedResult.Auth.DuplicateAccount
 
-        oneDriveAccountDao.save(OneDriveAccountEntity(
+        // 允许账号失效后重新登录
+        oneDriveAccountDao.findByAzureId(
+            accountDao.findByClient(client.id), me.id
+        )?.apply {
+            tokenType = token.tokenType
+            accessToken = token.accessToken
+            refreshToken = token.refreshToken
+            tokenExpire = token.expires
+            accountExpired = false
+            oneDriveAccountDao.save(this)
+
+            return RespResult.SAMPLE
+        }
+
+        // TODO 重名时自动重命名
+        accountDao.findByName(client.id, me.displayName)?.let {
+            throw FailedResult.Client.DuplicateAccountName(it.name, it.id)
+        }
+
+        val entity = AccountsEntity(
             parentClientId = client.id,
-            azureId = UUID.fromString(me.id),
             displayName = me.displayName,
             userPrincipalName = me.userPrincipalName,
+        )
+        accountDao.save(entity)
+        oneDriveAccountDao.save(OneDriveAccountEntity(
+            id = entity.id,
+            azureUserId = me.id,
             tokenType = token.tokenType,
             accessToken = token.accessToken,
             refreshToken = token.refreshToken,
-            tokenExpire = token.expires
+            tokenExpire = token.expires,
         ))
 
         return RespResult.SAMPLE
     }
 
     @Transactional
-    override fun create(params: JsonObject) {
+    override fun create(name: String, params: JsonObject) {
         val creation = ClientCreateOneDrive::class.fromGson(params)
-        clientDao.findClient(creation.name)?.let {
+        val user = current.User.id
+        clientDao.findByName(user, name)?.let {
             throw FailedResult.Client.DuplicateClientName
         }
 
         onedriveClientDao.findClient(
+            clientDao.findByUser(user),
             creation.azureClientId,
             creation.azureClientSecret,
             creation.endPoint,
             creation.tenantId,
         )?.let {
-            throw FailedResult.Client.DuplicateClientInfo(creation.name, it.id)
+            throw FailedResult.Client.DuplicateClientInfo(name, it.id)
         }
 
         val client = ClientsEntity(
-            name = creation.name,
+            name = name,
             type = ClientType.OneDrive,
+            createBy = user,
         )
         clientDao.save(client)
         onedriveClientDao.save(OneDriveClientEntity(
@@ -135,8 +162,6 @@ class OneDriveAction(
             clientSecret = creation.azureClientSecret,
             tenantId = creation.tenantId,
             endPoint = creation.endPoint,
-            createBy = current.User.id,
-            createAt = System.currentTimeMillis(),
         ))
     }
 
@@ -166,8 +191,6 @@ class OneDriveAction(
 
     data class ClientCreateOneDrive(
         @RequestParam(required = true)
-        val name: String,
-        @RequestParam(required = true)
         val azureClientId: String,
         @RequestParam(required = true)
         val azureClientSecret: String,
@@ -178,10 +201,5 @@ class OneDriveAction(
     data class ClientEditOneDrive(
         val name: String?,
         val clientSecret: String?,
-    )
-
-    data class LoginReqDto(
-        val code: String,
-        val state: String,
     )
 }

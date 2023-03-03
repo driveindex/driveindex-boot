@@ -16,6 +16,6 @@ open class RespResult<T: Any> internal constructor(
     }
 }
 
-fun <T: Serializable> T.resp(): RespResult<T> {
+fun <T: Any> T.resp(): RespResult<T> {
     return RespResult(data = this)
 }

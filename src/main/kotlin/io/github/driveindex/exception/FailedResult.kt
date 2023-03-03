@@ -59,9 +59,13 @@ class FailedResult private constructor(
         val NotFound get() = FailedResult(-404, "Client 不存在")
         val TypeNotMatch get() = FailedResult(-404, "Client 类型不匹配")
 
-        val DuplicateClientName get() = FailedResult(-100301, "名称已存在")
+        val DuplicateClientName get() = FailedResult(-100301, "Client 名称已存在")
         fun DuplicateClientInfo(name: String, id: UUID) =
             FailedResult(-100301, "此 Client 信息与“$name”相同",
+                mapOf("name" to name, "id" to id))
+
+        fun DuplicateAccountName(name: String, id: UUID) =
+            FailedResult(-100301, "账号名称已存在：$name",
                 mapOf("name" to name, "id" to id))
     }
 }

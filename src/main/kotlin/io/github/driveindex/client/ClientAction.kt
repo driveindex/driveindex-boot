@@ -22,7 +22,7 @@ interface ClientAction {
     val clientDao: ClientsDao
     val type: ClientType
     fun getClient(id: UUID): ClientsEntity {
-        val client = clientDao.getClient(id)
+        val client = Application.getBean<ClientsDao>().getClient(id)
             ?: throw FailedResult.Client.NotFound
         if (client.type != type) {
             throw FailedResult.Client.TypeNotMatch
@@ -30,7 +30,7 @@ interface ClientAction {
         return client
     }
 
-    fun create(params: JsonObject)
+    fun create(name: String, params: JsonObject)
     fun edit(params: JsonObject, clientId: UUID)
 }
 
@@ -57,8 +57,8 @@ enum class ClientType(
         return action.loginRequest(params)
     }
 
-    override fun create(params: JsonObject) {
-        action.create(params)
+    override fun create(name: String, params: JsonObject) {
+        action.create(name, params)
     }
 
     override fun edit(params: JsonObject, clientId: UUID) {

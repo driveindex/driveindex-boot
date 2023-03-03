@@ -29,15 +29,6 @@ data class OneDriveClientEntity(
 
     @Column(name = "azure_client_endpoint")
     val endPoint: EndPoint = EndPoint.Global,
-
-    @Column(name = "create_by")
-    val createBy: UUID,
-
-    @Column(name = "create_at")
-    val createAt: Long,
-
-    @Column(name = "modify_at")
-    val modifyAt: Long? = null,
 ) {
     enum class EndPoint(
         val LoginHosts: String,

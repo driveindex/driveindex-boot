@@ -11,29 +11,23 @@ import java.util.*
 data class OneDriveAccountEntity(
     @Id
     @Column(name = "id")
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID,
 
-    @Column(name = "client_id")
-    val parentClientId: UUID,
-
-    @Column(name = "azure_id")
-    val azureId: UUID,
-
-    @Column(name = "display_name")
-    val displayName: String,
-
-    @Column(name = "user_principal_name")
-    val userPrincipalName: String,
+    @Column(name = "azure_user_id")
+    val azureUserId: String,
 
     @Column(name = "token_type")
-    val tokenType: String,
+    var tokenType: String,
 
     @Column(name = "access_token")
-    val accessToken: String,
+    var accessToken: String,
 
     @Column(name = "token_expire")
-    val tokenExpire: Long,
+    var tokenExpire: Long,
 
     @Column(name = "refresh_token")
-    val refreshToken: String,
+    var refreshToken: String,
+
+    @Column(name = "expired")
+    var accountExpired: Boolean = false,
 )

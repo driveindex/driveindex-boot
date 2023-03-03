@@ -70,3 +70,8 @@ fun <ItemT> PriorityQueue<ItemT>.toSortedList(): LinkedList<ItemT> {
         }
     }
 }
+
+fun <ItemT: Any> ItemT.addTo(list: MutableCollection<ItemT>): ItemT {
+    list.add(this)
+    return this
+}

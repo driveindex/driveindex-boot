@@ -8,20 +8,20 @@ import jakarta.persistence.Table
 import java.util.*
 
 @Entity
-@Table(name = "clients")
-data class ClientsEntity(
+@Table(name = "accounts")
+data class AccountsEntity(
     @Id
-    @Column(name = "client_id")
+    @Column(name = "id")
     val id: UUID = UUID.randomUUID(),
 
-    @Column(name = "name")
-    var name: String,
+    @Column(name = "client_id")
+    val parentClientId: UUID,
 
-    @Column(name = "type")
-    val type: ClientType,
+    @Column(name = "display_name")
+    var displayName: String,
 
-    @Column(name = "create_by")
-    val createBy: UUID,
+    @Column(name = "user_principal_name")
+    val userPrincipalName: String,
 
     @Column(name = "create_at")
     val createAt: Long = System.currentTimeMillis(),
