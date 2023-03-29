@@ -30,6 +30,7 @@ dependencies {
         exclude("com.fasterxml.jackson.core:jackson-databind")
     }
     implementation("org.springframework.boot:spring-boot-starter-security")
+//    implementation("org.springframework.boot:spring-boot-starter-websocket")
 
 
 //    implementation("com.dtflys.forest:forest-spring-boot-starter:1.5.28")
@@ -42,7 +43,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     runtimeOnly("com.h2database:h2")
-    runtimeOnly("org.flywaydb:flyway-core:9.14.1")
+    runtimeOnly("org.flywaydb:flyway-core:9.16.1")
 
     implementation("org.ini4j:ini4j:0.5.4")
     implementation("com.google.code.gson:gson")

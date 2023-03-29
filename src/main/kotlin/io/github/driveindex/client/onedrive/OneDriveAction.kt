@@ -5,6 +5,7 @@ import io.github.driveindex.client.ClientAction
 import io.github.driveindex.client.ClientType
 import io.github.driveindex.core.ConfigManager
 import io.github.driveindex.core.util.*
+import io.github.driveindex.dto.feign.AzureGraphDtoV2_Me_Drive_Root_Delta
 import io.github.driveindex.dto.req.user.ClientLoginReqDto
 import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.SampleResult
@@ -13,12 +14,12 @@ import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.feigh.AzurePortalClient
 import io.github.driveindex.h2.dao.AccountsDao
 import io.github.driveindex.h2.dao.ClientsDao
-import io.github.driveindex.h2.dao.OneDriveAccountDao
-import io.github.driveindex.h2.dao.OneDriveClientDao
+import io.github.driveindex.h2.dao.onedrive.OneDriveAccountDao
+import io.github.driveindex.h2.dao.onedrive.OneDriveClientDao
 import io.github.driveindex.h2.entity.AccountsEntity
 import io.github.driveindex.h2.entity.ClientsEntity
-import io.github.driveindex.h2.entity.OneDriveAccountEntity
-import io.github.driveindex.h2.entity.OneDriveClientEntity
+import io.github.driveindex.h2.entity.onedrive.OneDriveAccountEntity
+import io.github.driveindex.h2.entity.onedrive.OneDriveClientEntity
 import io.github.driveindex.module.Current
 import jakarta.transaction.Transactional
 import org.springframework.web.bind.annotation.*
@@ -122,14 +123,16 @@ class OneDriveAction(
             userPrincipalName = me.userPrincipalName,
         )
         accountDao.save(entity)
-        onedriveAccountDao.save(OneDriveAccountEntity(
-            id = entity.id,
-            azureUserId = me.id,
-            tokenType = token.tokenType,
-            accessToken = token.accessToken,
-            refreshToken = token.refreshToken,
-            tokenExpire = token.expires,
-        ))
+        onedriveAccountDao.save(
+            OneDriveAccountEntity(
+                id = entity.id,
+                azureUserId = me.id,
+                tokenType = token.tokenType,
+                accessToken = token.accessToken,
+                refreshToken = token.refreshToken,
+                tokenExpire = token.expires,
+            )
+        )
 
         return SampleResult
     }
@@ -155,16 +158,18 @@ class OneDriveAction(
         val client = ClientsEntity(
             name = name,
             type = ClientType.OneDrive,
-            createBy = user,
+            supportDelta = creation.endPoint.supportDelta
         )
         clientDao.save(client)
-        onedriveClientDao.save(OneDriveClientEntity(
-            id = client.id,
-            clientId = creation.azureClientId,
-            clientSecret = creation.azureClientSecret,
-            tenantId = creation.tenantId,
-            endPoint = creation.endPoint,
-        ))
+        onedriveClientDao.save(
+            OneDriveClientEntity(
+                id = client.id,
+                clientId = creation.azureClientId,
+                clientSecret = creation.azureClientSecret,
+                tenantId = creation.tenantId,
+                endPoint = creation.endPoint,
+            )
+        )
     }
 
     @Transactional
@@ -189,6 +194,27 @@ class OneDriveAction(
             }
             onedriveClientDao.save(it)
         }
+    }
+
+    @Transactional
+    override fun delta(accountId: UUID) {
+        val endPoint = onedriveClientDao.getReferenceById(
+            accountDao.getReferenceById(accountId).parentClientId
+        ).endPoint
+        var delta: AzureGraphDtoV2_Me_Drive_Root_Delta
+        val token: String
+        onedriveAccountDao.getReferenceById(accountId).let {
+            token = it.accessToken
+            delta = AzureGraphDtoV2_Me_Drive_Root_Delta(
+                "token=${it.deltaToken ?: ""}", null, listOf()
+            )
+        }
+        do {
+            delta = endPoint.Graph.Me_Drive_Root_Delta(token, delta.nextToken)
+            for (item in delta.value) {
+
+            }
+        } while (delta.deltaToken == null)
     }
 
     data class ClientCreateOneDrive(

@@ -1,4 +1,4 @@
-package io.github.driveindex.h2.entity
+package io.github.driveindex.h2.entity.onedrive
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -30,4 +30,7 @@ data class OneDriveAccountEntity(
 
     @Column(name = "expired")
     var accountExpired: Boolean = false,
+
+    @Column(name = "delta_token")
+    var deltaToken: String? = null,
 )

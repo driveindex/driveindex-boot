@@ -26,5 +26,5 @@ data class AccountsEntity(
     val createAt: Long = System.currentTimeMillis(),
 
     @Column(name = "modify_at")
-    var modifyAt: Long? = null,
+    var modifyAt: Long = System.currentTimeMillis(),
 )

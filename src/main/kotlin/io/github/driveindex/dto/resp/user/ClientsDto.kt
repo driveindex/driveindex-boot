@@ -1,11 +1,7 @@
 package io.github.driveindex.dto.resp.user
 
 import io.github.driveindex.client.ClientType
-import io.github.driveindex.h2.entity.OneDriveClientEntity
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import io.github.driveindex.h2.entity.onedrive.OneDriveClientEntity
 import java.util.*
 
 data class ClientsDto<T: Any>(

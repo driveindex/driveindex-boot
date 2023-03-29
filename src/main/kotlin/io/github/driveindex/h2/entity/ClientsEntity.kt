@@ -20,12 +20,12 @@ data class ClientsEntity(
     @Column(name = "type")
     val type: ClientType,
 
-    @Column(name = "create_by")
-    val createBy: UUID,
+    @Column(name = "support_delta")
+    val supportDelta: Boolean = false,
 
     @Column(name = "create_at")
     val createAt: Long = System.currentTimeMillis(),
 
     @Column(name = "modify_at")
-    var modifyAt: Long? = null,
+    var modifyAt: Long = System.currentTimeMillis(),
 )

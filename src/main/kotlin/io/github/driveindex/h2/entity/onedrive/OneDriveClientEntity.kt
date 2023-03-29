@@ -1,4 +1,4 @@
-package io.github.driveindex.h2.entity
+package io.github.driveindex.h2.entity.onedrive
 
 import com.google.gson.annotations.SerializedName
 import feign.Feign
@@ -9,6 +9,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.Transient
 import java.util.*
 
 @Entity
@@ -69,5 +70,10 @@ data class OneDriveClientEntity(
             Application.getBean<Feign.Builder>()
                 .target(AzureGraphClient::class.java, graph)
         }
+
+        /**
+         * @see <a href="https://learn.microsoft.com/zh-cn/graph/delta-query-overview#national-clouds">使用增量查询跟踪 Microsoft Graph 数据更改 - 国家云</a>
+         */
+        val supportDelta: Boolean get() = this == CN || this == Global
     }
 }

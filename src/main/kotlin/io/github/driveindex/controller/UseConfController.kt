@@ -17,8 +17,8 @@ import io.github.driveindex.dto.resp.user.OneDriveClientDetail
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.h2.dao.AccountsDao
 import io.github.driveindex.h2.dao.ClientsDao
-import io.github.driveindex.h2.dao.OneDriveAccountDao
-import io.github.driveindex.h2.dao.OneDriveClientDao
+import io.github.driveindex.h2.dao.onedrive.OneDriveAccountDao
+import io.github.driveindex.h2.dao.onedrive.OneDriveClientDao
 import io.github.driveindex.module.Current
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
