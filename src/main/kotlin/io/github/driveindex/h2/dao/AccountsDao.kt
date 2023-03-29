@@ -10,11 +10,14 @@ import java.util.*
 @Repository
 interface AccountsDao: JpaRepository<AccountsEntity, UUID> {
     @Query("from AccountsEntity where id=:id")
-    fun getClient(id: UUID): ClientsEntity?
+    fun getAccount(id: UUID): AccountsEntity?
 
     @Query("from AccountsEntity where parentClientId=:clientId and displayName=:name")
-    fun findByName(clientId: UUID, name: String): ClientsEntity?
+    fun findByName(clientId: UUID, name: String): AccountsEntity?
 
     @Query("select id from AccountsEntity where parentClientId=:clientId")
     fun findByClient(clientId: UUID): List<UUID>
+
+    @Query("from AccountsEntity where parentClientId=:clientId")
+    fun listByClient(clientId: UUID): List<AccountsEntity>
 }

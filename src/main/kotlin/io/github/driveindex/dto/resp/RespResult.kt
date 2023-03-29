@@ -11,10 +11,10 @@ open class RespResult<T: Any> internal constructor(
     val message: String = "success.",
     val data: T? = null
 ): Serializable {
-    companion object {
-        val SAMPLE = RespResult<Nothing>()
-    }
+
 }
+
+object SampleResult: RespResult<Unit>()
 
 fun <T: Any> T.resp(): RespResult<T> {
     return RespResult(data = this)

@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
 
 interface ClientAction {
     fun loginUri(dto: ClientLoginReqDto): RespResult<String>
-    fun loginRequest(params: JsonObject): RespResult<Nothing>
+    fun loginRequest(params: JsonObject): RespResult<Unit>
 
     fun onConstruct() { }
 
@@ -53,7 +53,7 @@ enum class ClientType(
         return action.loginUri(dto)
     }
 
-    override fun loginRequest(params: JsonObject): RespResult<Nothing> {
+    override fun loginRequest(params: JsonObject): RespResult<Unit> {
         return action.loginRequest(params)
     }
 

@@ -7,6 +7,7 @@ import io.github.driveindex.core.ConfigManager
 import io.github.driveindex.core.util.*
 import io.github.driveindex.dto.req.user.ClientLoginReqDto
 import io.github.driveindex.dto.resp.RespResult
+import io.github.driveindex.dto.resp.SampleResult
 import io.github.driveindex.dto.resp.resp
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.feigh.AzurePortalClient
@@ -28,15 +29,16 @@ class OneDriveAction(
     private val current: Current,
     override val clientDao: ClientsDao,
     private val accountDao: AccountsDao,
+
     private val onedriveClientDao: OneDriveClientDao,
-    private val oneDriveAccountDao: OneDriveAccountDao,
+    private val onedriveAccountDao: OneDriveAccountDao,
 ): ClientAction {
     override val type: ClientType = ClientType.OneDrive
 
     @GetMapping("/api/user/login/url/onedrive")
     override fun loginUri(@RequestBody dto: ClientLoginReqDto): RespResult<String> {
         val client = getClient(dto.clientId)
-        onedriveClientDao.getOneDriveClient(dto.clientId).let { entity ->
+        onedriveClientDao.getReferenceById(dto.clientId).let { entity ->
             val state = linkedMapOf<String, Any>(
                 "id" to dto.clientId,
                 "type" to client.type,
@@ -54,7 +56,7 @@ class OneDriveAction(
     }
 
     @PostMapping("/api/user/login/request/onedrive")
-    override fun loginRequest(@RequestBody params: JsonObject): RespResult<Nothing> {
+    override fun loginRequest(@RequestBody params: JsonObject): RespResult<Unit> {
         val param = params.get("state")
             .asString.ORIGIN_BASE64
             .split("&")
@@ -84,7 +86,7 @@ class OneDriveAction(
             }?.takeIf {
                 client.type == it
             } ?: throw FailedResult.Auth.IllegalRequest
-            return@let onedriveClientDao.getOneDriveClient(client.id)
+            return@let onedriveClientDao.getReferenceById(client.id)
         } ?: throw FailedResult.Auth.IllegalRequest
 
         val token = client.endPoint.Portal.getToken(
@@ -96,7 +98,7 @@ class OneDriveAction(
         val me = client.endPoint.Graph.Me(token.tokenStr)
 
         // 允许账号失效后重新登录
-        oneDriveAccountDao.findByAzureId(
+        onedriveAccountDao.findByAzureId(
             accountDao.findByClient(client.id), me.id
         )?.apply {
             tokenType = token.tokenType
@@ -104,14 +106,14 @@ class OneDriveAction(
             refreshToken = token.refreshToken
             tokenExpire = token.expires
             accountExpired = false
-            oneDriveAccountDao.save(this)
+            onedriveAccountDao.save(this)
 
-            return RespResult.SAMPLE
+            return SampleResult
         }
 
         // TODO 重名时自动重命名
         accountDao.findByName(client.id, me.displayName)?.let {
-            throw FailedResult.Client.DuplicateAccountName(it.name, it.id)
+            throw FailedResult.Client.DuplicateAccountName(it.displayName, it.id)
         }
 
         val entity = AccountsEntity(
@@ -120,7 +122,7 @@ class OneDriveAction(
             userPrincipalName = me.userPrincipalName,
         )
         accountDao.save(entity)
-        oneDriveAccountDao.save(OneDriveAccountEntity(
+        onedriveAccountDao.save(OneDriveAccountEntity(
             id = entity.id,
             azureUserId = me.id,
             tokenType = token.tokenType,
@@ -129,7 +131,7 @@ class OneDriveAction(
             tokenExpire = token.expires,
         ))
 
-        return RespResult.SAMPLE
+        return SampleResult
     }
 
     @Transactional
@@ -178,7 +180,7 @@ class OneDriveAction(
             }
             clientDao.save(it)
         } ?: FailedResult.Client.NotFound
-        onedriveClientDao.getOneDriveClient(clientId).also {
+        onedriveClientDao.getReferenceById(clientId).also {
             edition.clientSecret?.let { secret ->
                 if (it.clientSecret == secret) {
                     return@also

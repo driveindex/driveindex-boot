@@ -2,6 +2,7 @@ package io.github.driveindex.controller
 
 import io.github.driveindex.dto.req.auth.LoginReqDto
 import io.github.driveindex.dto.resp.RespResult
+import io.github.driveindex.dto.resp.SampleResult
 import io.github.driveindex.dto.resp.admin.LoginRespDto
 import io.github.driveindex.security.SecurityConfig
 import io.swagger.v3.oas.annotations.Operation
@@ -26,8 +27,8 @@ class LoginController {
         security = [SecurityRequirement(name = SecurityConfig.Header)]
     )
     @GetMapping("/api/token_state")
-    fun checkToken(): RespResult<Nothing> {
-        return RespResult.SAMPLE
+    fun checkToken(): SampleResult {
+        return SampleResult
     }
 
     @Operation(summary = "用户登陆", description = "使用密码登陆")

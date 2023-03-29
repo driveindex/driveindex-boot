@@ -1,6 +1,5 @@
 package io.github.driveindex.h2.entity
 
-import io.github.driveindex.client.ClientType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id

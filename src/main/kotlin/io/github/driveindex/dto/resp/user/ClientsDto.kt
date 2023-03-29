@@ -19,6 +19,6 @@ data class ClientsDto<T: Any>(
 
 data class OneDriveClientDetail(
     val clientId: String,
-    val tenantId: String ,
+    val tenantId: String,
     val endPoint: OneDriveClientEntity.EndPoint,
 )
