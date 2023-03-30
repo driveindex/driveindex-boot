@@ -9,3 +9,8 @@ data class GetCommonReqDto(
         DeltaTrack, CorsOrigin
     }
 }
+
+data class SetCommonReqDto(
+    val deltaTick: Int,
+    val corsOrigin: String
+): Serializable

@@ -1,5 +1,9 @@
 package io.github.driveindex.core.util
 
+import org.springframework.context.annotation.Configuration
+import org.springframework.format.Formatter
+import org.springframework.format.FormatterRegistry
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.io.Serializable
 import java.util.*
 
@@ -170,6 +174,23 @@ class CanonicalPath : Cloneable, Serializable {
         fun of(path: String): CanonicalPath {
             return CanonicalPath(path.replace('\\', '/')
                 .replace(":".toRegex(), ""))
+        }
+    }
+
+    object Formatter: org.springframework.format.Formatter<CanonicalPath> {
+        override fun print(target: CanonicalPath, locale: Locale): String {
+            return target.path
+        }
+
+        override fun parse(text: String, locale: Locale): CanonicalPath {
+            return of(text)
+        }
+    }
+
+    @org.springframework.context.annotation.Configuration
+    class Configuration: WebMvcConfigurer {
+        override fun addFormatters(registry: FormatterRegistry) {
+            registry.addFormatter(Formatter)
         }
     }
 }

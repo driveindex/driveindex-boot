@@ -9,9 +9,6 @@ import java.util.*
 
 @Repository
 interface AccountsDao: JpaRepository<AccountsEntity, UUID> {
-    @Query("from AccountsEntity where id=:id")
-    fun getAccount(id: UUID): AccountsEntity?
-
     @Query("from AccountsEntity where parentClientId=:clientId and displayName=:name")
     fun findByName(clientId: UUID, name: String): AccountsEntity?
 
