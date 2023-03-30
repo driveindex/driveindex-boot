@@ -31,7 +31,7 @@ class Application {
                 .setDatasource(
                         ConfigManager.SqlDatabasePath,
                         ConfigManager.SqlUsername,
-                        ConfigManager.SqlPassword
+                        ConfigManager.SqlPassword,
                 )
                 .setDebug(ConfigManager.Debug)
                 .setLogPath(ConfigManager.LogPath)
@@ -42,8 +42,8 @@ class Application {
             return Context.getBean(T::class.java)
         }
 
-        fun <T: Any> getBean(clazz: KClass<T>): T {
-            return Context.getBean(clazz.java)
+        val <T: Any> KClass<T>.Bean: T get() {
+            return Context.getBean(java)
         }
     }
 }

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Application" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-    <module name="driveindex-boot.main" />
+    <module name="driveindex-boot.server.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="io.github.driveindex.Application" />
     <option name="WORKING_DIRECTORY" value="file://bin" />
     <method v="2">

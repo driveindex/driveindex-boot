@@ -26,6 +26,9 @@ data class ClientsEntity(
     @Column(name = "create_at")
     val createAt: Long = System.currentTimeMillis(),
 
+    @Column(name = "create_by")
+    val createBy: UUID,
+
     @Column(name = "modify_at")
     var modifyAt: Long = System.currentTimeMillis(),
 )

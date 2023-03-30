@@ -6,7 +6,6 @@ import io.github.driveindex.client.ClientType
 import io.github.driveindex.core.ConfigManager
 import io.github.driveindex.core.util.*
 import io.github.driveindex.dto.feign.AzureGraphDtoV2_Me_Drive_Root_Delta
-import io.github.driveindex.dto.req.user.ClientLoginReqDto
 import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.SampleResult
 import io.github.driveindex.dto.resp.resp
@@ -37,11 +36,14 @@ class OneDriveAction(
     override val type: ClientType = ClientType.OneDrive
 
     @GetMapping("/api/user/login/url/onedrive")
-    override fun loginUri(@RequestBody dto: ClientLoginReqDto): RespResult<String> {
-        val client = getClient(dto.clientId)
-        onedriveClientDao.getReferenceById(dto.clientId).let { entity ->
+    override fun loginUri(
+        @RequestParam("client_id") clientId: UUID,
+        @RequestParam("redirect_uri") redirectUri: String
+    ): RespResult<String> {
+        val client = getClient(clientId)
+        onedriveClientDao.getReferenceById(clientId).let { entity ->
             val state = linkedMapOf<String, Any>(
-                "id" to dto.clientId,
+                "id" to clientId,
                 "type" to client.type,
                 "ts" to System.currentTimeMillis()
             )
@@ -49,7 +51,7 @@ class OneDriveAction(
             return ("${entity.endPoint.LoginHosts}/${entity.tenantId}/oauth2/v2.0/authorize?" +
                 "client_id=${entity.clientId}" +
                 "&response_type=code" +
-                "&redirect_uri=${dto.redirectUri}" +
+                "&redirect_uri=${redirectUri}" +
                 "&response_mode=query" +
                 "&scope=${AzurePortalClient.Scope.joinToString("%20")}" +
                 "&state=${state.joinToString("&").TO_BASE64}").resp()
@@ -120,6 +122,7 @@ class OneDriveAction(
         val entity = AccountsEntity(
             parentClientId = client.id,
             displayName = me.displayName,
+            createBy = current.User.id,
             userPrincipalName = me.userPrincipalName,
         )
         accountDao.save(entity)
@@ -158,7 +161,8 @@ class OneDriveAction(
         val client = ClientsEntity(
             name = name,
             type = ClientType.OneDrive,
-            supportDelta = creation.endPoint.supportDelta
+            createBy = user,
+            supportDelta = creation.endPoint.supportDelta,
         )
         clientDao.save(client)
         onedriveClientDao.save(
@@ -184,7 +188,7 @@ class OneDriveAction(
                 it.name = name
             }
             clientDao.save(it)
-        } ?: FailedResult.Client.NotFound
+        } ?: throw FailedResult.Client.NotFound
         onedriveClientDao.getReferenceById(clientId).also {
             edition.clientSecret?.let { secret ->
                 if (it.clientSecret == secret) {
