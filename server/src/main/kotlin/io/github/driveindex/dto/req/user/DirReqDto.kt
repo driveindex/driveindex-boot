@@ -1,5 +1,6 @@
 package io.github.driveindex.dto.req.user
 
+import io.github.driveindex.core.util.CanonicalPath
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
@@ -8,15 +9,22 @@ import java.util.*
  * @author sgpublic
  * @Date 2023/3/30 下午3:11
  */
+
 data class CreateDirReqDto(
     val name: String,
-    val parent: UUID,
+    val parent: CanonicalPath,
+)
+
+data class CreateLinkReqDto(
+    val name: String?,
+    val target: UUID,
+    val parent: CanonicalPath,
 )
 
 data class GetDirReqDto(
     @field:Schema(description = "目标文件 ID")
     @RequestParam(name = "path")
-    val path: String,
+    val path: CanonicalPath,
     @field:Schema(description = "排序规则", allowableValues = ["name", "size", "create_time", "modified_time"], defaultValue = "name")
     @RequestParam(name = "sort_by", required = false)
     val sortBy: Sort,
@@ -40,10 +48,10 @@ data class GetDirReqDto(
 }
 
 data class DeleteDirReqDto(
-    val id: UUID,
+    val path: CanonicalPath,
 )
 
 data class RenameDirReqDto(
-    val id: UUID,
+    val path: CanonicalPath,
     val name: String,
 )

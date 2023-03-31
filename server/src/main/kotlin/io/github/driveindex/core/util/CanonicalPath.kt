@@ -1,5 +1,6 @@
 package io.github.driveindex.core.util
 
+import org.aspectj.weaver.tools.cache.SimpleCacheFactory.path
 import org.springframework.context.annotation.Configuration
 import org.springframework.format.Formatter
 import org.springframework.format.FormatterRegistry
@@ -15,12 +16,16 @@ import java.util.*
 class CanonicalPath : Cloneable, Serializable {
     /** CanonicalPath 不可变，同 String  */
     private val pathStack: Stack<String>
+    val length: Int get() = pathStack.size
 
     /**
      * 获取当前规范路径文本
      * @return 规范路径文本
      */
-    val path: String
+    private val path: String
+    fun getPath(): String {
+        return path
+    }
 
     private constructor(path: String) {
         pathStack = Stack()
@@ -69,7 +74,7 @@ class CanonicalPath : Cloneable, Serializable {
      * @return 是否存在父级目录
      */
     fun hasParent(): Boolean {
-        return !path.isEmpty()
+        return pathStack.isNotEmpty()
     }
 
     /**
@@ -126,22 +131,11 @@ class CanonicalPath : Cloneable, Serializable {
 
     /**
      * 返回当前规范路径文本
-     * @see CanonicalPath.getPath
+     * @see CanonicalPath.path
      * @return 规范路径文本
      */
     override fun toString(): String {
         return path
-    }
-
-    /**
-     * 扩展：转为 Microsoft Graph 接口中需要的路径参数。
-     * <br></br>- 若当前路径为根目录，则返回空文本；
-     * <br></br>- 若当前路径为不根目录，则在首位添加英文冒号返回，即：":${CanonicalPath#getPath()}:"。
-     * @return 转换后的文本
-     */
-    fun toAzureCanonicalizePath(): String {
-        val canonicalizePath = path
-        return if (ROOT_PATH == canonicalizePath) "" else ":$canonicalizePath:"
     }
 
     public override fun clone(): CanonicalPath {
@@ -156,15 +150,23 @@ class CanonicalPath : Cloneable, Serializable {
 
     override fun equals(o: Any?): Boolean {
         if (this === o) return true
-        return if (o !is CanonicalPath) false else pathStack == o.pathStack
+        return if (o !is CanonicalPath) false
+        else pathStack == o.pathStack
     }
 
     override fun hashCode(): Int {
         return pathStack.hashCode()
     }
 
+    fun subPath(start: Int, end: Int = pathStack.size): CanonicalPath {
+        return CanonicalPath(Stack<String>().also {
+            it.addAll(pathStack.subList(start, end))
+        })
+    }
+
     companion object {
         const val ROOT_PATH = "/"
+        val ROOT = of(ROOT_PATH)
 
         /**
          * 利用路径文本创建 CanonicalPath 对象
@@ -179,7 +181,7 @@ class CanonicalPath : Cloneable, Serializable {
 
     object Formatter: org.springframework.format.Formatter<CanonicalPath> {
         override fun print(target: CanonicalPath, locale: Locale): String {
-            return target.path
+            return target.getPath()
         }
 
         override fun parse(text: String, locale: Locale): CanonicalPath {

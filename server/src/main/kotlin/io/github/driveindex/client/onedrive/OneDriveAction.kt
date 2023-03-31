@@ -21,6 +21,7 @@ import io.github.driveindex.h2.entity.onedrive.OneDriveAccountEntity
 import io.github.driveindex.h2.entity.onedrive.OneDriveClientEntity
 import io.github.driveindex.module.Current
 import jakarta.transaction.Transactional
+import org.aspectj.weaver.tools.cache.SimpleCacheFactory
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -234,4 +235,16 @@ class OneDriveAction(
         val name: String?,
         val clientSecret: String?,
     )
+}
+
+
+/**
+ * 扩展：转为 Microsoft Graph 接口中需要的路径参数。
+ * <br/>- 若当前路径为根目录，则返回空文本；
+ * <br/>- 若当前路径为不根目录，则在首位添加英文冒号返回，即：":${CanonicalPath#getPath()}:"。
+ * @return 转换后的文本
+ */
+fun CanonicalPath.toAzureCanonicalizePath(): String {
+    val canonicalizePath = SimpleCacheFactory.path
+    return if (CanonicalPath.ROOT_PATH == canonicalizePath) "" else ":$canonicalizePath:"
 }

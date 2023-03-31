@@ -1,10 +1,10 @@
 package io.github.driveindex.h2.dao
 
+import io.github.driveindex.core.util.CanonicalPath
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.h2.entity.FileEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
@@ -16,23 +16,35 @@ import java.util.UUID
 interface FileDao: JpaRepository<FileEntity, UUID> {
     @Query("update from FileEntity set name=:name where id=:id")
     fun rename(id: UUID, name: String)
+
+    @Query("from FileEntity where path=:path")
+    fun findByPath(path: CanonicalPath): FileEntity?
+
+    @Query("from FileEntity where parentId=:parent")
+    fun listByParent(parent: UUID): List<FileEntity>
 }
 
-fun FileDao.findDirByIdOrNull(id: UUID): FileEntity? {
-    return findByIdOrNull(id)?.takeIf { it.isDir }
-}
-
-fun FileDao.findMyLocalDirByIdAssert(id: UUID, user: UUID): FileEntity {
-    val target = findDirByIdOrNull(id)
-        ?: throw FailedResult.Dir.TargetNotFound
-    if (target.isRoot) {
-        throw FailedResult.Dir.ModifyRoot
-    }
-    if (!target.isLocal) {
+fun FileDao.getLocalVirtualDir(path: CanonicalPath): FileEntity {
+    val target = findVirtualDir(path)
+    if (path != target.path) {
         throw FailedResult.Dir.ModifyRemote
     }
-    if (target.createBy != user) {
-        throw FailedResult.Dir.TargetNotFound
-    }
     return target
+}
+
+fun FileDao.findVirtualDir(path: CanonicalPath): FileEntity {
+    return findVirtualDirIntern(path)
+        ?: throw FailedResult.Dir.TargetNotFound
+}
+
+private fun FileDao.findVirtualDirIntern(path: CanonicalPath, index: Int = 0): FileEntity? {
+    if (index > path.length) {
+        return null
+    }
+    findByPath(path)
+        ?.takeIf { it.linkTarget == null }
+        ?: return null
+    (index + 1).let {
+        return findVirtualDirIntern(path.subPath(it), it)
+    }
 }

@@ -26,6 +26,9 @@ data class OneDriveFileEntity(
     @Column(name = "web_url")
     val webUrl: String,
 
+    @Column(name = "mime_type")
+    val mimeType: String,
+
     @Column(name = "quick_xor_hash")
     val quickXorHash: String? = null,
 

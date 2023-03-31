@@ -42,10 +42,10 @@ class DBSetupModule(
                 createBy = userEntity.id,
                 accountId = null,
 
-                name = FileEntity.CONST_ROOT,
-                mimeType = FileEntity.TYPE_LOCAL_DIR,
+                name = CanonicalPath.ROOT_PATH,
                 parentId = null,
-                pathHash = CanonicalPath.ROOT_PATH.SHA1,
+                path = CanonicalPath.ROOT,
+                isDir = true,
             ))
         }
     }
