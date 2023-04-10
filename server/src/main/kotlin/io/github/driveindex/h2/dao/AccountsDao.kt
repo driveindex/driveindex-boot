@@ -12,8 +12,11 @@ interface AccountsDao: JpaRepository<AccountsEntity, UUID> {
     @Query("from AccountsEntity where parentClientId=:clientId and displayName=:name")
     fun findByName(clientId: UUID, name: String): AccountsEntity?
 
+    @Query("from AccountsEntity where parentClientId=:clientId")
+    fun findByClient(clientId: UUID): List<AccountsEntity>
+
     @Query("select id from AccountsEntity where parentClientId=:clientId")
-    fun findByClient(clientId: UUID): List<UUID>
+    fun selectIdByClient(clientId: UUID): List<UUID>
 
     @Query("from AccountsEntity where parentClientId=:clientId")
     fun listByClient(clientId: UUID): List<AccountsEntity>

@@ -38,13 +38,13 @@ data class AzureGraphDtoV2_Me_Drive_Root_Delta(
     private val deltaLink: String?,
     val value: List<Value>
 ) {
-    val nextToken: String get() = nextToken?.getToken() ?: ""
+    val nextToken: String get() = nextLink?.getToken() ?: ""
     val deltaToken: String? get() = deltaLink?.getToken()
 
     companion object {
         private val TokenPattern: Pattern = "token=(.*?)".toPattern()
     }
-    fun String.getToken() = TokenPattern.matcher(this).group().substring(6)
+    private fun String.getToken() = TokenPattern.matcher(this).group().substring(6)
 
     data class Value(
         val id: String,

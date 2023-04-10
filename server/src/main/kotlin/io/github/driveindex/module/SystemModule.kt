@@ -46,6 +46,7 @@ class DBSetupModule(
                 parentId = null,
                 path = CanonicalPath.ROOT,
                 isDir = true,
+                clientType = null,
             ))
         }
     }

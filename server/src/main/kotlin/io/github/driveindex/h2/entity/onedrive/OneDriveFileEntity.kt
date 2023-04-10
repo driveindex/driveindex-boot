@@ -18,7 +18,7 @@ data class OneDriveFileEntity(
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "azure_account_id")
-    val accountId: String,
+    val accountId: UUID,
 
     @Column(name = "file_id")
     val fileId: String,

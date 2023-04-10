@@ -68,7 +68,7 @@ class UseConfController(
     @Operation(summary = "常规设置")
     @PostMapping("/api/user/common")
     fun setCommonSettings(
-            @RequestBody dto: SetCommonReqDto
+        @RequestBody dto: SetCommonReqDto
     ): SampleResult {
         if (dto.deltaTick < 0) {
             throw FailedResult.UserSettings.DeltaTrackDuration
@@ -82,7 +82,7 @@ class UseConfController(
 
 
     @Operation(summary = "枚举 Client 配置")
-    @GetMapping("/api/user/clients")
+    @GetMapping("/api/user/client")
     fun listClients(): RespResult<List<ClientsDto<*>>> {
         val list: ArrayList<ClientsDto<*>> = ArrayList()
         for (entity in clientsDao.listByUser(current.User.id)) {
@@ -108,7 +108,7 @@ class UseConfController(
     }
 
     @Operation(summary = "枚举 Client 下登录的账号")
-    @GetMapping("/api/user/accounts")
+    @GetMapping("/api/user/account")
     fun listAccount(@RequestParam("client_id") clientId: UUID): RespResult<List<AccountsDto<*>>> {
         val client = clientsDao.getClient(clientId)
             ?: throw FailedResult.Client.NotFound
@@ -133,6 +133,12 @@ class UseConfController(
         return list.resp()
     }
 
+    @Operation(summary = "删除 Client 下登录的账号")
+    @PostMapping("/api/user/account/delete")
+    fun deleteAccount(@RequestParam("account_id") accountId: UUID): SampleResult {
+        accountsDao.deleteById(accountId)
+        return SampleResult
+    }
 
     @Operation(summary = "创建 Client")
     @PostMapping("/api/user/client")
@@ -142,7 +148,7 @@ class UseConfController(
     }
 
     @Operation(summary = "修改 Client")
-    @PutMapping("/api/user/client")
+    @PostMapping("/api/user/client/edit")
     fun editClient(@RequestBody dto: ClientEditReqDto): SampleResult {
         dto.type.edit(dto.data, dto.clientId)
         return SampleResult

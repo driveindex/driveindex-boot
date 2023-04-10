@@ -45,10 +45,8 @@ enum class ClientType(
 
     private val action: ClientAction by lazy { target.Bean }
 
-    override val clientDao: ClientsDao
-        get() = action.clientDao
-    override val type: ClientType
-        get() = action.type
+    override val clientDao: ClientsDao get() = action.clientDao
+    override val type: ClientType get() = action.type
 
     override fun loginUri(clientId: UUID, redirectUri: String): RespResult<String> {
         return action.loginUri(clientId, redirectUri)

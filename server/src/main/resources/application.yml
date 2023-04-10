@@ -11,14 +11,14 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
-        cache:
-          use_second_level_cache: true
-          region.factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
-          jcache:
-            provider: org.ehcache.jcache.JCacheCachingProvider
-            uri: ehcache.xml
+#    properties:
+#      hibernate:
+#        cache:
+#          use_second_level_cache: true
+#          region.factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
+#          jcache:
+#            provider: org.ehcache.jcache.JCacheCachingProvider
+#            uri: ehcache.xml
     open-in-view: false
   datasource:
     driver-class-name: org.h2.Driver

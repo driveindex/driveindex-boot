@@ -13,15 +13,20 @@ import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.feigh.AzurePortalClient
 import io.github.driveindex.h2.dao.AccountsDao
 import io.github.driveindex.h2.dao.ClientsDao
+import io.github.driveindex.h2.dao.FileDao
 import io.github.driveindex.h2.dao.onedrive.OneDriveAccountDao
 import io.github.driveindex.h2.dao.onedrive.OneDriveClientDao
+import io.github.driveindex.h2.dao.onedrive.OneDriveFileDao
 import io.github.driveindex.h2.entity.AccountsEntity
 import io.github.driveindex.h2.entity.ClientsEntity
+import io.github.driveindex.h2.entity.FileEntity
 import io.github.driveindex.h2.entity.onedrive.OneDriveAccountEntity
 import io.github.driveindex.h2.entity.onedrive.OneDriveClientEntity
+import io.github.driveindex.h2.entity.onedrive.OneDriveFileEntity
 import io.github.driveindex.module.Current
 import jakarta.transaction.Transactional
 import org.aspectj.weaver.tools.cache.SimpleCacheFactory
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -30,9 +35,11 @@ class OneDriveAction(
     private val current: Current,
     override val clientDao: ClientsDao,
     private val accountDao: AccountsDao,
+    private val fileDao: FileDao,
 
     private val onedriveClientDao: OneDriveClientDao,
     private val onedriveAccountDao: OneDriveAccountDao,
+    private val onedriveFileDao: OneDriveFileDao,
 ): ClientAction {
     override val type: ClientType = ClientType.OneDrive
 
@@ -103,7 +110,7 @@ class OneDriveAction(
 
         // 允许账号失效后重新登录
         onedriveAccountDao.findByAzureId(
-            accountDao.findByClient(client.id), me.id
+            accountDao.selectIdByClient(client.id), me.id
         )?.apply {
             tokenType = token.tokenType
             accessToken = token.accessToken
@@ -203,12 +210,13 @@ class OneDriveAction(
 
     @Transactional
     override fun delta(accountId: UUID) {
+        log.info("account delta track start! account id: $accountId")
         val endPoint = onedriveClientDao.getReferenceById(
             accountDao.getReferenceById(accountId).parentClientId
         ).endPoint
         var delta: AzureGraphDtoV2_Me_Drive_Root_Delta
         val token: String
-        onedriveAccountDao.getReferenceById(accountId).let {
+        val account = onedriveAccountDao.getReferenceById(accountId).also {
             token = it.accessToken
             delta = AzureGraphDtoV2_Me_Drive_Root_Delta(
                 "token=${it.deltaToken ?: ""}", null, listOf()
@@ -217,9 +225,33 @@ class OneDriveAction(
         do {
             delta = endPoint.Graph.Me_Drive_Root_Delta(token, delta.nextToken)
             for (item in delta.value) {
-
+                val parent = onedriveFileDao.findByParentReference(
+                    item.parentReference.id
+                )
+                fileDao.save(FileEntity(
+                    accountId = account.id,
+                    name = item.name,
+                    parentId = parent?.id,
+                    isDir = item.folder != null,
+                    createBy = null,
+                    path = parent?.id?.let {
+                        return@let fileDao.findByIdOrNull(it)?.path
+                    } ?: CanonicalPath.ROOT,
+                    clientType = type
+                ))
+                onedriveFileDao.save(OneDriveFileEntity(
+                    accountId = account.id,
+                    fileId = item.id,
+                    webUrl = item.webUrl,
+                    mimeType = item.file?.mimeType ?: "directory",
+                    quickXorHash = item.file?.hashes?.quickXorHash,
+                    sha1Hash = item.file?.hashes?.sha1Hash,
+                    sha256Hash = item.file?.hashes?.sha256Hash,
+                ))
             }
         } while (delta.deltaToken == null)
+        account.deltaToken = delta.deltaToken
+        log.info("account delta track finished! account id: $accountId")
     }
 
     data class ClientCreateOneDrive(

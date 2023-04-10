@@ -36,7 +36,7 @@ data class GetDirReqDto(
     val pageSize: Int,
     @field:Schema(description = "页索引", defaultValue = "0")
     @RequestParam(name = "page_index", required = false)
-    val pageIndex: Int
+    val pageIndex: Int,
 ) {
     enum class Sort {
         NAME, SIZE, CREATE_TIME, MODIFIED_TIME;
@@ -46,6 +46,13 @@ data class GetDirReqDto(
         }
     }
 }
+
+
+data class GetFileReqDto(
+    @field:Schema(description = "目标文件 ID")
+    @RequestParam(name = "path")
+    val path: CanonicalPath,
+)
 
 data class DeleteDirReqDto(
     val path: CanonicalPath,

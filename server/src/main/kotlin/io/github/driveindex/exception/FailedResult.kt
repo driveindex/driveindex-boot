@@ -73,6 +73,8 @@ class FailedResult private constructor(
         val TargetNotFound get() = FailedResult(-130101, "找不到指定目录或指定了一个非本地目录")
         val ModifyRoot get() = FailedResult(-130102, "无法操作 root 目录")
         val ModifyRemote get() = FailedResult(-130103, "暂不支持操作远端目录")
+        val NotADir get() = FailedResult(-130104, "目标非目录")
+        val NotAFile get() = FailedResult(-130105, "目标非文件")
     }
 }
 

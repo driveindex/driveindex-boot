@@ -1,5 +1,6 @@
 package io.github.driveindex.h2.entity
 
+import io.github.driveindex.client.ClientType
 import io.github.driveindex.core.util.CanonicalPath
 import jakarta.persistence.Cacheable
 import jakarta.persistence.Column
@@ -21,6 +22,9 @@ data class FileEntity(
 
     @Column(name = "account_id")
     val accountId: UUID?,
+
+    @Column(name = "client_type")
+    val clientType: ClientType?,
 
     @Column(name = "create_by")
     val createBy: UUID?,

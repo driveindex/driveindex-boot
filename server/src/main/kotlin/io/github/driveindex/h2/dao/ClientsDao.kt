@@ -19,4 +19,7 @@ interface ClientsDao: JpaRepository<ClientsEntity, UUID> {
 
     @Query("from ClientsEntity where createBy=:user")
     fun listByUser(user: UUID): List<ClientsEntity>
+
+    @Query("from ClientsEntity where supportDelta=true")
+    fun listIfSupportDelta(): List<ClientsEntity>
 }

@@ -1,8 +1,5 @@
 package io.github.driveindex.core.util
 
-import org.aspectj.weaver.tools.cache.SimpleCacheFactory.path
-import org.springframework.context.annotation.Configuration
-import org.springframework.format.Formatter
 import org.springframework.format.FormatterRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.io.Serializable
@@ -148,10 +145,10 @@ class CanonicalPath : Cloneable, Serializable {
         return newStack
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        return if (o !is CanonicalPath) false
-        else pathStack == o.pathStack
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        return if (other !is CanonicalPath) false
+        else pathStack == other.pathStack
     }
 
     override fun hashCode(): Int {
