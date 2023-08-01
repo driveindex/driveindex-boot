@@ -17,7 +17,7 @@ class ConsoleFilter : Filter<ILoggingEvent>() {
 
     init {
         val check = !ConfigManager.Debug
-        self = if (check) Level.INFO else Level.DEBUG
+        self = if (check) Level.INFO else Level.TRACE
         out = if (check) Level.WARN else Level.INFO
     }
 

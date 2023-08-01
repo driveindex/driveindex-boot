@@ -22,9 +22,4 @@ interface UserDao: JpaRepository<UserEntity, String> {
     @Transactional
     @Query("delete UserEntity where deleteTime>=0 and deleteTime<:now")
     fun doRealDeleteUser(now: Long = System.currentTimeMillis())
-
-    @Modifying
-    @Transactional
-    @Query("delete UserEntity where id in :ids")
-    fun doDeleteUser(ids: List<String>)
 }

@@ -21,13 +21,13 @@ class ClientModule(
     }
 
     private fun realSetup() {
-        log.info("delta track start!")
+        log.trace("delta track start!")
         for (client in client.listIfSupportDelta()) {
             for (accountId in account.selectIdByClient(client.id)) {
                 client.type.delta(accountId)
             }
         }
-        log.info("delta track finish! sleep 5 min...")
+        log.trace("delta track finish! sleep 5 min...")
         Thread.sleep(5 * 60 * 1000)
         onSetup()
     }

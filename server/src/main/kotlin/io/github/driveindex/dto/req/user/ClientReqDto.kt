@@ -12,8 +12,12 @@ data class ClientCreateReqDto(
 
 data class ClientEditReqDto(
     val clientId: UUID,
-    val type: ClientType,
+    val clientType: ClientType,
     val data: JsonObject,
+)
+
+data class ClientDeleteReqDto(
+    val clientId: UUID,
 )
 
 data class ClientLoginReqDto(

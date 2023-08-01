@@ -32,6 +32,7 @@ interface ClientAction {
     }
 
     fun create(name: String, params: JsonObject)
+    fun delete(clientId: UUID)
     fun edit(params: JsonObject, clientId: UUID)
 
     fun delta(accountId: UUID)
@@ -62,6 +63,10 @@ enum class ClientType(
 
     override fun edit(params: JsonObject, clientId: UUID) {
         action.edit(params, clientId)
+    }
+
+    override fun delete(clientId: UUID) {
+        action.delete(clientId)
     }
 
     override fun delta(accountId: UUID) {

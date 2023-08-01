@@ -3,12 +3,7 @@ package io.github.driveindex.feigh
 import io.github.driveindex.dto.feign.AzureGraphDtoV2_Me
 import io.github.driveindex.dto.feign.AzureGraphDtoV2_Me_Drive_Root_Delta
 import io.github.driveindex.dto.feign.AzurePortalDtoV1_Token
-import org.springframework.data.jpa.repository.Query
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.*
 
 
 /**

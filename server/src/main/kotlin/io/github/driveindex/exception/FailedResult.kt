@@ -22,6 +22,9 @@ class FailedResult private constructor(
     companion object {
         val UnsupportedRequest get() = FailedResult(-4001, "不支持的请求方式")
         val MissingBody get() = FailedResult(-4002, "参数缺失")
+        fun MissingBody(name: String, type: String) =
+            FailedResult(-4002, "参数缺失",
+                mapOf("name" to name, "type" to type))
         val AnonymousDenied get() = FailedResult(-4050, "请登陆后再试")
         val NotFound get() = FailedResult(-4040, "您请求的资源不存在")
 

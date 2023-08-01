@@ -18,7 +18,7 @@ class FeignClientConfig(
     private val encoder: Encoder,
     private val decoder: Decoder,
     private val contract: Contract,
-    private val errorDecoder: AzureErrorDecoder
+    private val errorDecoder: AzureErrorDecoder,
 ) {
     @Bean
     fun feignBuilder(): Feign.Builder {

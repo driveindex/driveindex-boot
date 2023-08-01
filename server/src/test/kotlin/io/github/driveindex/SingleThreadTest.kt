@@ -1,6 +1,5 @@
 package io.github.driveindex
 
-import io.github.driveindex.core.util.log
 import org.junit.jupiter.api.Test
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors

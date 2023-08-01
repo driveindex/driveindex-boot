@@ -7,6 +7,7 @@ import io.github.driveindex.exception.FailedResult
 import org.springframework.http.HttpStatus
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.http.server.reactive.ServerHttpResponse
+import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -53,6 +54,12 @@ class _ExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleHttpMessageNotReadableException(e: HttpMessageNotReadableException): FailedRespResult {
         return FailedResult.MissingBody.resp()
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MissingServletRequestParameterException::class)
+    fun handleMissingServletRequestParameterException(e: MissingServletRequestParameterException): FailedRespResult {
+        return FailedResult.MissingBody(e.parameterName, e.parameterType).resp()
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

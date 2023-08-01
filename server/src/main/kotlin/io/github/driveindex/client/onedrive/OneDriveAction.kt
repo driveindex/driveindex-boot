@@ -45,8 +45,8 @@ class OneDriveAction(
 
     @GetMapping("/api/user/login/url/onedrive")
     override fun loginUri(
-        @RequestParam("client_id") clientId: UUID,
-        @RequestParam("redirect_uri") redirectUri: String
+        @RequestParam("client_id", required = true) clientId: UUID,
+        @RequestParam("redirect_uri", required = true) redirectUri: String
     ): RespResult<String> {
         val client = getClient(clientId)
         onedriveClientDao.getReferenceById(clientId).let { entity ->
@@ -206,6 +206,11 @@ class OneDriveAction(
             }
             onedriveClientDao.save(it)
         }
+    }
+
+    @Transactional
+    override fun delete(clientId: UUID) {
+        onedriveClientDao.deleteById(clientId)
     }
 
     @Transactional

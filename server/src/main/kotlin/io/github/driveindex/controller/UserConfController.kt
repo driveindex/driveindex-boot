@@ -2,10 +2,7 @@ package io.github.driveindex.controller
 
 import io.github.driveindex.client.ClientType
 import io.github.driveindex.core.util.SHA1
-import io.github.driveindex.dto.req.user.ClientCreateReqDto
-import io.github.driveindex.dto.req.user.ClientEditReqDto
-import io.github.driveindex.dto.req.user.SetCommonReqDto
-import io.github.driveindex.dto.req.user.SetPwdReqDto
+import io.github.driveindex.dto.req.user.*
 import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.SampleResult
 import io.github.driveindex.dto.resp.admin.CommonSettingsRespDto
@@ -150,7 +147,16 @@ class UseConfController(
     @Operation(summary = "修改 Client")
     @PostMapping("/api/user/client/edit")
     fun editClient(@RequestBody dto: ClientEditReqDto): SampleResult {
-        dto.type.edit(dto.data, dto.clientId)
+        dto.clientType.edit(dto.data, dto.clientId)
+        return SampleResult
+    }
+
+    @Operation(summary = "删除 Client")
+    @PostMapping("/api/user/client/delete")
+    fun deleteClient(@RequestBody dto: ClientDeleteReqDto): SampleResult {
+        val client = clientsDao.getClient(dto.clientId)
+            ?: throw FailedResult.Client.NotFound
+        client.type.delete(dto.clientId)
         return SampleResult
     }
 }
