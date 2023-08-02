@@ -1,6 +1,5 @@
 package io.github.driveindex.security.filter
 
-import io.github.driveindex.core.util.fromGson
 import io.github.driveindex.dto.req.auth.LoginReqDto
 import io.github.driveindex.security.IAuthenticationProvider
 import io.github.driveindex.security.UserPasswordToken
@@ -8,6 +7,7 @@ import io.github.driveindex.security.handler.IAuthenticationFailureHandler
 import io.github.driveindex.security.handler.IAuthenticationSuccessHandler
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import kotlinx.serialization.json.Json
 import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationServiceException
 import org.springframework.security.authentication.ProviderManager
@@ -53,7 +53,7 @@ class IUsernamePasswordAuthenticationFilter(
             throw AuthenticationServiceException("Authentication method not supported: " + request.method)
         }
         val content = String(request.inputStream.readAllBytes(), StandardCharsets.UTF_8)
-        val dto: LoginReqDto = LoginReqDto::class.fromGson(content)
+        val dto: LoginReqDto = Json.decodeFromString(content)
         val token = UserPasswordToken(dto.username, dto.password)
         return authenticationManager.authenticate(token)
     }

@@ -1,26 +1,31 @@
 package io.github.driveindex.dto.req.user
 
-import com.google.gson.JsonObject
 import io.github.driveindex.client.ClientType
-import java.util.*
+import io.github.driveindex.core.util.KUUID
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
+@Serializable
 data class ClientCreateReqDto(
     val name: String,
     val type: ClientType,
     val data: JsonObject,
 )
 
+@Serializable
 data class ClientEditReqDto(
-    val clientId: UUID,
+    val clientId: KUUID,
     val clientType: ClientType,
     val data: JsonObject,
 )
 
+@Serializable
 data class ClientDeleteReqDto(
-    val clientId: UUID,
+    val clientId: KUUID,
 )
 
+@Serializable
 data class ClientLoginReqDto(
-    val clientId: UUID,
+    val clientId: KUUID,
     val redirectUri: String,
 )

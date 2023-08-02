@@ -1,7 +1,9 @@
 package io.github.driveindex.dto.req.user
 
 import io.github.driveindex.core.util.CanonicalPath
+import io.github.driveindex.core.util.KUUID
 import io.swagger.v3.oas.annotations.media.Schema
+import kotlinx.serialization.Serializable
 import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
 
@@ -10,14 +12,16 @@ import java.util.*
  * @Date 2023/3/30 下午3:11
  */
 
+@Serializable
 data class CreateDirReqDto(
     val name: String,
     val parent: CanonicalPath,
 )
 
+@Serializable
 data class CreateLinkReqDto(
     val name: String?,
-    val target: UUID,
+    val target: KUUID,
     val parent: CanonicalPath,
 )
 

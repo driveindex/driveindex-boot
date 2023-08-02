@@ -1,6 +1,7 @@
 package io.github.driveindex.core.util
 
-import java.io.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.nio.charset.Charset
 import java.security.MessageDigest
 import java.util.*
@@ -61,20 +62,20 @@ val String.MD5_FULL_UPPER: String get() {
 /**
  * 16 位 MD5
  */
-val Serializable.MD5: String get() {
+val Any.MD5: String get() {
     return MD5_FULL.substring(5, 24)
 }
-val Serializable.MD5_UPPER: String get() {
+val Any.MD5_UPPER: String get() {
     return MD5.uppercase()
 }
 
 /**
  * 32 位 MD5
  */
-val Serializable.MD5_FULL: String get() {
-    return toGson().MD5_FULL
+val Any.MD5_FULL: String get() {
+    return Json.encodeToString(this).MD5_FULL
 }
-val Serializable.MD5_FULL_UPPER: String get() {
+val Any.MD5_FULL_UPPER: String get() {
     return MD5_FULL.uppercase()
 }
 

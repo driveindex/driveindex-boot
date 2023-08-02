@@ -1,6 +1,5 @@
 package io.github.driveindex.h2.entity.onedrive
 
-import com.google.gson.annotations.SerializedName
 import feign.Feign
 import io.github.driveindex.Application
 import io.github.driveindex.feigh.AzureGraphClient
@@ -9,7 +8,6 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import jakarta.persistence.Transient
 import java.util.*
 
 @Entity
@@ -36,25 +34,21 @@ data class OneDriveClientEntity(
         private val portal: String,
         private val graph: String,
     ) {
-        @SerializedName("global")
         Global(
             "https://login.microsoftonline.com",
             "https://portal.azure.com",
             "https://graph.microsoft.com",
         ),
-        @SerializedName("us_l4")
         US_L4(
             "https://login.microsoftonline.us",
             "https://portal.azure.us",
             "https://graph.microsoft.us",
         ),
-        @SerializedName("us_l5")
         US_L5(
             "https://login.microsoftonline.us",
             "https://portal.azure.us",
             "https://dod-graph.microsoft.us",
         ),
-        @SerializedName("cn")
         CN(
             "https://login.chinacloudapi.cn",
             "https://portal.azure.cn",

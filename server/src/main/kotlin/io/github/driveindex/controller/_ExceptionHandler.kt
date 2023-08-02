@@ -53,12 +53,14 @@ class _ExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleHttpMessageNotReadableException(e: HttpMessageNotReadableException): FailedRespResult {
+        log.trace("参数缺失", e)
         return FailedResult.MissingBody.resp()
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MissingServletRequestParameterException::class)
     fun handleMissingServletRequestParameterException(e: MissingServletRequestParameterException): FailedRespResult {
+        log.trace("参数缺失", e)
         return FailedResult.MissingBody(e.parameterName, e.parameterType).resp()
     }
 

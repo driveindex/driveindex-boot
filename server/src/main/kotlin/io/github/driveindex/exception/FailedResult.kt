@@ -1,30 +1,32 @@
 package io.github.driveindex.exception
 
 import io.github.driveindex.Application
-import io.github.driveindex.core.util.toGson
-import io.github.driveindex.dto.resp.RespResult
+import io.github.driveindex.core.util.KUUID
+import io.github.driveindex.core.util.jsonObjectOf
 import jakarta.servlet.http.HttpServletResponse
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import java.io.Serializable
 import java.nio.charset.StandardCharsets
-import java.util.*
 
 /**
  * @author sgpublic
  * @Date 2023/2/8 9:15
  */
+@Serializable
 class FailedResult private constructor(
-    val code: Int,
+    private val code: Int,
     override val message: String,
-    private val params: Map<String, Any>? = null
+    private val params: JsonObject? = null
 ): RuntimeException(message) {
     companion object {
         val UnsupportedRequest get() = FailedResult(-4001, "不支持的请求方式")
         val MissingBody get() = FailedResult(-4002, "参数缺失")
         fun MissingBody(name: String, type: String) =
             FailedResult(-4002, "参数缺失",
-                mapOf("name" to name, "type" to type))
+                jsonObjectOf("name" to name, "type" to type))
         val AnonymousDenied get() = FailedResult(-4050, "请登陆后再试")
         val NotFound get() = FailedResult(-4040, "您请求的资源不存在")
 
@@ -63,13 +65,13 @@ class FailedResult private constructor(
         val TypeNotMatch get() = FailedResult(-120102, "Client 类型不匹配")
 
         val DuplicateClientName get() = FailedResult(-120201, "Client 名称已存在")
-        fun DuplicateClientInfo(name: String, id: UUID) =
+        fun DuplicateClientInfo(name: String, id: KUUID) =
             FailedResult(-100301, "此 Client 信息与“$name”相同",
-                mapOf("name" to name, "id" to id))
+                jsonObjectOf("name" to name, "id" to id))
 
-        fun DuplicateAccountName(name: String, id: UUID) =
+        fun DuplicateAccountName(name: String, id: KUUID) =
             FailedResult(-100301, "账号名称已存在：$name",
-                mapOf("name" to name, "id" to id))
+                jsonObjectOf("name" to name, "id" to id))
     }
 
     object Dir {
@@ -81,14 +83,20 @@ class FailedResult private constructor(
     }
 }
 
-class FailedRespResult(code: Int, message: String, params: Map<String, Any>?)
-    : RespResult<Map<String, Any>>(code, message, params)
+@Serializable
+data class FailedRespResult(
+    val code: Int,
+    val message: String,
+    val params: JsonObject?
+)
 
-fun HttpServletResponse.write(result: Serializable) {
+fun HttpServletResponse.write(result: FailedResult) {
     characterEncoding = StandardCharsets.UTF_8.name()
     addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
     writer.use {
-        it.write(result.toGson())
+        it.write(Json.encodeToString(
+            FailedRespResult.serializer(), result.resp()
+        ))
         it.flush()
     }
 }

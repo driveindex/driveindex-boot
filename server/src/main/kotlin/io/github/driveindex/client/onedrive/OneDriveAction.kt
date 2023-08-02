@@ -1,6 +1,5 @@
 package io.github.driveindex.client.onedrive
 
-import com.google.gson.JsonObject
 import io.github.driveindex.client.ClientAction
 import io.github.driveindex.client.ClientType
 import io.github.driveindex.core.ConfigManager
@@ -25,6 +24,11 @@ import io.github.driveindex.h2.entity.onedrive.OneDriveClientEntity
 import io.github.driveindex.h2.entity.onedrive.OneDriveFileEntity
 import io.github.driveindex.module.Current
 import jakarta.transaction.Transactional
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 import org.aspectj.weaver.tools.cache.SimpleCacheFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.web.bind.annotation.*
@@ -68,8 +72,8 @@ class OneDriveAction(
 
     @PostMapping("/api/user/login/request/onedrive")
     override fun loginRequest(@RequestBody params: JsonObject): RespResult<Unit> {
-        val param = params.get("state")
-            .asString.ORIGIN_BASE64
+        val param = Json.decodeFromJsonElement<AccountLoginOneDrive>(params)
+            .state.ORIGIN_BASE64
             .split("&")
             .fold(mutableMapOf<String, String>()) { map, param ->
                 param.split("=").takeIf {
@@ -150,7 +154,8 @@ class OneDriveAction(
 
     @Transactional
     override fun create(name: String, params: JsonObject) {
-        val creation = ClientCreateOneDrive::class.fromGson(params)
+        val creation: ClientCreateOneDrive = Json.decodeFromJsonElement(params)
+
         val user = current.User.id
         clientDao.findByName(user, name)?.let {
             throw FailedResult.Client.DuplicateClientName
@@ -187,7 +192,7 @@ class OneDriveAction(
     @Transactional
     override fun edit(params: JsonObject, clientId: UUID) {
         getClient(clientId)
-        val edition = ClientEditOneDrive::class.fromGson(params)
+        val edition: ClientEditOneDrive = Json.decodeFromJsonElement(params)
         clientDao.getClient(clientId)?.also {
             edition.name?.let { name ->
                 if (it.name == name) {
@@ -259,17 +264,28 @@ class OneDriveAction(
         log.info("account delta track finished! account id: $accountId")
     }
 
+    @Serializable
+    data class AccountLoginOneDrive(
+        val state: String,
+    )
+
+    @Serializable
     data class ClientCreateOneDrive(
-        @RequestParam(required = true)
+        @SerialName("azure_client_id")
         val azureClientId: String,
-        @RequestParam(required = true)
+        @SerialName("azure_client_secret")
         val azureClientSecret: String,
+        @SerialName("end_point")
         val endPoint: OneDriveClientEntity.EndPoint = OneDriveClientEntity.EndPoint.Global,
+        @SerialName("tenant_id")
         val tenantId: String = "common",
     )
 
+    @Serializable
     data class ClientEditOneDrive(
+        @SerialName("name")
         val name: String?,
+        @SerialName("client_secret")
         val clientSecret: String?,
     )
 }

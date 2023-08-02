@@ -1,10 +1,12 @@
 package io.github.driveindex.dto.req.user
 
-import java.io.Serializable
+import kotlinx.serialization.Serializable
 
+
+@Serializable
 data class GetCommonReqDto(
     val filter: Set<ConfItem>? = null
-): Serializable {
+) {
     enum class ConfItem {
         DeltaTrack, CorsOrigin
     }
@@ -13,4 +15,4 @@ data class GetCommonReqDto(
 data class SetCommonReqDto(
     val deltaTick: Int,
     val corsOrigin: String
-): Serializable
+)

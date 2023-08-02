@@ -1,9 +1,10 @@
 package io.github.driveindex.dto.feign
 
-import com.google.gson.annotations.SerializedName
-import java.io.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.util.regex.Pattern
 
+@Serializable
 data class AzureFailedResultDto(
     val error: String,
     val errorDescription: String,
@@ -11,8 +12,9 @@ data class AzureFailedResultDto(
     val timestamp: String,
     val traceId: String,
     val correlationId: String,
-) : Serializable
+)
 
+@Serializable
 data class AzurePortalDtoV1_Token(
     val tokenType: String,
     private val expiresIn: Long,
@@ -25,16 +27,18 @@ data class AzurePortalDtoV1_Token(
     val tokenStr: String get() = "$tokenType $accessToken"
 }
 
+@Serializable
 data class AzureGraphDtoV2_Me(
     val displayName: String,
     val id: String,
     val userPrincipalName: String,
 )
 
+@Serializable
 data class AzureGraphDtoV2_Me_Drive_Root_Delta(
-    @SerializedName("@odata.nextLink")
+    @SerialName("@odata.nextLink")
     private val nextLink: String?,
-    @SerializedName("@odata.deltaLink")
+    @SerialName("@odata.deltaLink")
     private val deltaLink: String?,
     val value: List<Value>
 ) {
@@ -46,6 +50,7 @@ data class AzureGraphDtoV2_Me_Drive_Root_Delta(
     }
     private fun String.getToken() = TokenPattern.matcher(this).group().substring(6)
 
+    @Serializable
     data class Value(
         val id: String,
         val name: String,
@@ -55,13 +60,16 @@ data class AzureGraphDtoV2_Me_Drive_Root_Delta(
         val folder: Unit?,
         val file: File?,
     ) {
+        @Serializable
         data class ParentReference(
             val id: String
         )
+        @Serializable
         data class File(
             val mimeType: String,
             val hashes: Hashes
         ) {
+            @Serializable
             data class Hashes(
                 val quickXorHash: String,
                 val sha1Hash: String?,

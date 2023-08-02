@@ -3,7 +3,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("org.springframework.boot")
     id("io.spring.dependency-management")
+
     kotlin("jvm")
+    kotlin("plugin.serialization")
     kotlin("plugin.spring")
     kotlin("plugin.jpa")
 }
@@ -42,7 +44,7 @@ dependencies {
     runtimeOnly("org.flywaydb:flyway-core:9.16.1")
 
     implementation("org.ini4j:ini4j:0.5.4")
-    implementation("com.google.code.gson:gson")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 
 
     val jjwt = "0.11.5"

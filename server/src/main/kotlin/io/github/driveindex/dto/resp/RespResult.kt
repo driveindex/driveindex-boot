@@ -1,21 +1,37 @@
 package io.github.driveindex.dto.resp
 
-import java.io.Serializable
+import jakarta.servlet.http.HttpServletResponse
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import java.nio.charset.StandardCharsets
 
 /**
  * @author sgpublic
  * @Date 2023/2/7 16:07
  */
-open class RespResult<T: Any> internal constructor(
+@Serializable
+open class RespResult<T: @Serializable Any> internal constructor(
     val code: Int = 200,
     val message: String = "success.",
     val data: T? = null
-): Serializable {
-
-}
+)
 
 object SampleResult: RespResult<Unit>()
 
-fun <T: Any> T.resp(): RespResult<T> {
+fun <T: @Serializable Any> T.resp(): RespResult<T> {
     return RespResult(data = this)
+}
+
+fun <T: @Serializable Any> HttpServletResponse.write(serializer: KSerializer<T>, result: T) {
+    characterEncoding = StandardCharsets.UTF_8.name()
+    addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+    writer.use {
+        it.write(Json.encodeToString(
+            RespResult.serializer(serializer), result.resp()
+        ))
+        it.flush()
+    }
 }

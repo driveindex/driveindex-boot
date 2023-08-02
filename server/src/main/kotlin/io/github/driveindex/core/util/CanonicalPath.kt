@@ -1,8 +1,14 @@
 package io.github.driveindex.core.util
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import org.springframework.format.FormatterRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import java.io.Serializable
 import java.util.*
 
 /**
@@ -10,7 +16,8 @@ import java.util.*
  * @author sgpublic
  * @Date 2022/8/15 17:15
  */
-class CanonicalPath : Cloneable, Serializable {
+@Serializable(CanonicalPathSerializer::class)
+class CanonicalPath : Cloneable {
     /** CanonicalPath 不可变，同 String  */
     private val pathStack: Stack<String>
     val length: Int get() = pathStack.size
@@ -192,4 +199,17 @@ class CanonicalPath : Cloneable, Serializable {
             registry.addFormatter(Formatter)
         }
     }
+}
+
+object CanonicalPathSerializer: KSerializer<CanonicalPath> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("CanonicalPath", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): CanonicalPath {
+        return CanonicalPath.of(decoder.decodeString())
+    }
+
+    override fun serialize(encoder: Encoder, value: CanonicalPath) {
+        encoder.encodeString(value.toString())
+    }
+
 }

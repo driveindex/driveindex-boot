@@ -1,28 +1,27 @@
 package io.github.driveindex.client
 
-import com.google.gson.JsonObject
-import com.google.gson.annotations.SerializedName
 import io.github.driveindex.Application
 import io.github.driveindex.Application.Companion.Bean
 import io.github.driveindex.client.onedrive.OneDriveAction
-import io.github.driveindex.dto.req.user.ClientLoginReqDto
+import io.github.driveindex.core.util.KUUID
 import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.h2.dao.ClientsDao
 import io.github.driveindex.h2.entity.ClientsEntity
 import jakarta.annotation.PostConstruct
-import java.util.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.json.JsonObject
 import kotlin.reflect.KClass
 
 interface ClientAction {
-    fun loginUri(clientId: UUID, redirectUri: String): RespResult<String>
+    fun loginUri(clientId: KUUID, redirectUri: String): RespResult<String>
     fun loginRequest(params: JsonObject): RespResult<Unit>
 
     fun onConstruct() { }
 
     val clientDao: ClientsDao
     val type: ClientType
-    fun getClient(id: UUID): ClientsEntity {
+    fun getClient(id: KUUID): ClientsEntity {
         val client = Application.getBean<ClientsDao>().getClient(id)
             ?: throw FailedResult.Client.NotFound
         if (client.type != type) {
@@ -32,16 +31,16 @@ interface ClientAction {
     }
 
     fun create(name: String, params: JsonObject)
-    fun delete(clientId: UUID)
-    fun edit(params: JsonObject, clientId: UUID)
+    fun delete(clientId: KUUID)
+    fun edit(params: JsonObject, clientId: KUUID)
 
-    fun delta(accountId: UUID)
+    fun delta(accountId: KUUID)
 }
 
 enum class ClientType(
     private val target: KClass<out ClientAction>
 ): ClientAction {
-    @SerializedName("onedrive")
+    @SerialName("OneDrive")
     OneDrive(OneDriveAction::class);
 
     private val action: ClientAction by lazy { target.Bean }
@@ -49,7 +48,7 @@ enum class ClientType(
     override val clientDao: ClientsDao get() = action.clientDao
     override val type: ClientType get() = action.type
 
-    override fun loginUri(clientId: UUID, redirectUri: String): RespResult<String> {
+    override fun loginUri(clientId: KUUID, redirectUri: String): RespResult<String> {
         return action.loginUri(clientId, redirectUri)
     }
 
@@ -61,15 +60,15 @@ enum class ClientType(
         action.create(name, params)
     }
 
-    override fun edit(params: JsonObject, clientId: UUID) {
+    override fun edit(params: JsonObject, clientId: KUUID) {
         action.edit(params, clientId)
     }
 
-    override fun delete(clientId: UUID) {
+    override fun delete(clientId: KUUID) {
         action.delete(clientId)
     }
 
-    override fun delta(accountId: UUID) {
+    override fun delta(accountId: KUUID) {
         action.delta(accountId)
     }
 
