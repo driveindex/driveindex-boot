@@ -5,7 +5,7 @@ import io.github.driveindex.core.util.KUUID
 import io.github.driveindex.core.util.jsonObjectOf
 import jakarta.servlet.http.HttpServletResponse
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import io.github.driveindex.core.util.JsonGlobal
 import kotlinx.serialization.json.JsonObject
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -94,7 +94,7 @@ fun HttpServletResponse.write(result: FailedResult) {
     characterEncoding = StandardCharsets.UTF_8.name()
     addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
     writer.use {
-        it.write(Json.encodeToString(
+        it.write(JsonGlobal.encodeToString(
             FailedRespResult.serializer(), result.resp()
         ))
         it.flush()

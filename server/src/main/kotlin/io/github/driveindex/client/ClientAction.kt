@@ -9,7 +9,6 @@ import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.h2.dao.ClientsDao
 import io.github.driveindex.h2.entity.ClientsEntity
 import jakarta.annotation.PostConstruct
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.JsonObject
 import kotlin.reflect.KClass
 
@@ -40,7 +39,6 @@ interface ClientAction {
 enum class ClientType(
     private val target: KClass<out ClientAction>
 ): ClientAction {
-    @SerialName("OneDrive")
     OneDrive(OneDriveAction::class);
 
     private val action: ClientAction by lazy { target.Bean }

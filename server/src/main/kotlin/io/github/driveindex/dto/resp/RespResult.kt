@@ -3,7 +3,7 @@ package io.github.driveindex.dto.resp
 import jakarta.servlet.http.HttpServletResponse
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import io.github.driveindex.core.util.JsonGlobal
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import java.nio.charset.StandardCharsets
@@ -29,7 +29,7 @@ fun <T: @Serializable Any> HttpServletResponse.write(serializer: KSerializer<T>,
     characterEncoding = StandardCharsets.UTF_8.name()
     addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
     writer.use {
-        it.write(Json.encodeToString(
+        it.write(JsonGlobal.encodeToString(
             RespResult.serializer(serializer), result.resp()
         ))
         it.flush()

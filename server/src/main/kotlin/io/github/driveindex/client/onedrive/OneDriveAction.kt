@@ -26,7 +26,7 @@ import io.github.driveindex.module.Current
 import jakarta.transaction.Transactional
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import io.github.driveindex.core.util.JsonGlobal
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import org.aspectj.weaver.tools.cache.SimpleCacheFactory
@@ -72,7 +72,7 @@ class OneDriveAction(
 
     @PostMapping("/api/user/login/request/onedrive")
     override fun loginRequest(@RequestBody params: JsonObject): RespResult<Unit> {
-        val param = Json.decodeFromJsonElement<AccountLoginOneDrive>(params)
+        val param = JsonGlobal.decodeFromJsonElement<AccountLoginOneDrive>(params)
             .state.ORIGIN_BASE64
             .split("&")
             .fold(mutableMapOf<String, String>()) { map, param ->
@@ -154,7 +154,7 @@ class OneDriveAction(
 
     @Transactional
     override fun create(name: String, params: JsonObject) {
-        val creation: ClientCreateOneDrive = Json.decodeFromJsonElement(params)
+        val creation: ClientCreateOneDrive = JsonGlobal.decodeFromJsonElement(params)
 
         val user = current.User.id
         clientDao.findByName(user, name)?.let {
@@ -192,7 +192,7 @@ class OneDriveAction(
     @Transactional
     override fun edit(params: JsonObject, clientId: UUID) {
         getClient(clientId)
-        val edition: ClientEditOneDrive = Json.decodeFromJsonElement(params)
+        val edition: ClientEditOneDrive = JsonGlobal.decodeFromJsonElement(params)
         clientDao.getClient(clientId)?.also {
             edition.name?.let { name ->
                 if (it.name == name) {

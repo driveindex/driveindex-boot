@@ -1,5 +1,6 @@
 package io.github.driveindex.core.util
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -11,6 +12,11 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 import java.lang.IllegalArgumentException
 import java.util.*
+
+@OptIn(ExperimentalSerializationApi::class)
+val JsonGlobal = Json {
+    namingStrategy = JsonNamingStrategy.SnakeCase
+}
 
 fun jsonObjectOf(vararg contents: Pair<String, Any>): JsonObject {
     return buildJsonObject {
