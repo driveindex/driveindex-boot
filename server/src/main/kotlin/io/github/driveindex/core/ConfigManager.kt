@@ -30,7 +30,8 @@ class ConfigManager {
         private const val SectionSql = "sql"
         val SqlUsername by IniVal.New(SectionSql, "username", Application.APPLICATION_BASE_NAME_LOWER)
         val SqlPassword by IniVal.New(SectionSql, "password", "")
-        val SqlDatabasePath by IniVal.New(SectionSql, "path", "./data")
+        val SqlDatabaseHost by IniVal.New(SectionSql, "host", "localhost:3306")
+        val SqlDatabaseName by IniVal.New(SectionSql, "database", Application.APPLICATION_BASE_NAME_LOWER)
 
         private const val SectionJwt = "jwt"
         val TokenSecurityKey by lazy {

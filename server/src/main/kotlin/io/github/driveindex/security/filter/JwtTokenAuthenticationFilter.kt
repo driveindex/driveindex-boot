@@ -6,7 +6,7 @@ import io.github.driveindex.core.util.log
 import io.github.driveindex.core.util.toJwtTag
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.exception.write
-import io.github.driveindex.h2.dao.UserDao
+import io.github.driveindex.database.dao.UserDao
 import io.github.driveindex.security.SecurityConfig
 import io.github.driveindex.security.UserPasswordToken
 import io.jsonwebtoken.Claims
@@ -33,10 +33,9 @@ import java.util.*
 class JwtTokenAuthenticationFilter(
     private val user: UserDao
 ): GenericFilterBean() {
-    private val parser: JwtParser
-    init {
+    private val parser: JwtParser by lazy {
         val secretKey: Key = Keys.hmacShaKeyFor(ConfigManager.getTokenSecurityKey())
-        parser = Jwts.parserBuilder().setSigningKey(secretKey).build()
+        Jwts.parserBuilder().setSigningKey(secretKey).build()
     }
 
     override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
@@ -85,7 +84,7 @@ class JwtTokenAuthenticationFilter(
     private fun onValidToken(claims: Claims): UserPasswordToken? {
         val username: String = (claims[SecurityConfig.JWT_USERNAME] as String?)
             ?: throw IllegalArgumentException("no username found in jwt token")
-        val entity = user.getValidUser(username)
+        val entity = user.getUserByUsername(username)
             ?: throw IllegalStateException("user not found: $username")
 
         if (!entity.enable) {

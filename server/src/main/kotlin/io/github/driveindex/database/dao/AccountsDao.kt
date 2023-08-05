@@ -1,7 +1,6 @@
-package io.github.driveindex.h2.dao
+package io.github.driveindex.database.dao
 
-import io.github.driveindex.h2.entity.AccountsEntity
-import io.github.driveindex.h2.entity.ClientsEntity
+import io.github.driveindex.database.entity.AccountsEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository

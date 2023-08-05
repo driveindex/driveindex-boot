@@ -4,16 +4,14 @@ import io.github.driveindex.Application
 import io.github.driveindex.core.ConfigManager
 import io.github.driveindex.core.util.CanonicalPath
 import io.github.driveindex.core.util.MD5_UPPER
-import io.github.driveindex.core.util.SHA1
 import io.github.driveindex.core.util.log
-import io.github.driveindex.h2.dao.FileDao
-import io.github.driveindex.h2.dao.UserDao
-import io.github.driveindex.h2.entity.FileEntity
-import io.github.driveindex.h2.entity.UserEntity
+import io.github.driveindex.database.dao.FileDao
+import io.github.driveindex.database.dao.UserDao
+import io.github.driveindex.database.entity.FileEntity
+import io.github.driveindex.database.entity.UserEntity
 import io.github.driveindex.security.UserRole
 import jakarta.annotation.PostConstruct
 import jakarta.transaction.Transactional
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -49,21 +47,5 @@ class DBSetupModule(
                 clientType = null,
             ))
         }
-    }
-}
-
-@Component
-class ScheduleModule(
-    private val user: UserDao,
-) {
-    @PostConstruct
-    fun setup() {
-        cleanDeletedUser()
-    }
-
-    @Scheduled(cron = "0 0 0 * * *")
-    fun cleanDeletedUser() {
-        log.debug("清除回收站中的用户")
-        user.doRealDeleteUser()
     }
 }

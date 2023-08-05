@@ -1,7 +1,9 @@
-package io.github.driveindex.h2.entity
+package io.github.driveindex.database.entity
 
 import io.github.driveindex.security.UserRole
 import jakarta.persistence.*
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.util.UUID
 
 @Entity
@@ -9,6 +11,7 @@ import java.util.UUID
 data class UserEntity(
     @Id
     @Column(name = "id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "username")
@@ -22,23 +25,11 @@ data class UserEntity(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
-    val role: UserRole = UserRole.USER,
+    var role: UserRole = UserRole.USER,
 
     @Column(name = "enable")
     var enable: Boolean = true,
 
-    @Column(name = "delete_time")
-    private var deleteTime: Long = -1
-) {
-    companion object {
-        private const val DeleteTimeout = 30L * 24 * 3600 * 1000
-    }
-    fun markDeleted(isDeleted: Boolean) {
-        deleteTime = if (isDeleted) {
-            System.currentTimeMillis() + DeleteTimeout
-        } else {
-            -1
-        }
-    }
-    fun isDeleted(): Boolean = deleteTime >= 0
-}
+    @Column(name = "cors_origin")
+    var corsOrigin: String = "",
+)

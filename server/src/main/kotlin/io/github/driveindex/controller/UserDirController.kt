@@ -7,10 +7,11 @@ import io.github.driveindex.dto.resp.SampleResult
 import io.github.driveindex.dto.resp.resp
 import io.github.driveindex.dto.resp.user.FileListRespDto
 import io.github.driveindex.exception.FailedResult
-import io.github.driveindex.h2.dao.*
-import io.github.driveindex.h2.dao.onedrive.OneDriveFileDao
-import io.github.driveindex.h2.entity.FileEntity
+import io.github.driveindex.database.dao.*
+import io.github.driveindex.database.dao.onedrive.OneDriveFileDao
+import io.github.driveindex.database.entity.FileEntity
 import io.github.driveindex.module.Current
+import io.github.driveindex.module.DeletionModule
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.web.bind.annotation.*
@@ -26,10 +27,12 @@ class UserDirController(
     private val current: Current,
 
     private val onedriveFileDao: OneDriveFileDao,
+
+    private val deletionModule: DeletionModule,
 ) {
     @PostMapping("/api/user/file/dir")
     fun createDir(@RequestBody dto: CreateDirReqDto): SampleResult {
-        val dir = fileDao.getLocalVirtualDir(dto.parent, current.User.id)
+        val dir = fileDao.getLocalVirtualFile(dto.parent, current.User.id)
 
         val mkdir = dto.parent.append(dto.name)
         fileDao.save(FileEntity(
@@ -50,7 +53,7 @@ class UserDirController(
     fun createLink(@RequestBody dto: CreateLinkReqDto): SampleResult {
         val target = fileDao.findByIdOrNull(dto.target)
             ?: throw FailedResult.Dir.TargetNotFound
-        val dir = fileDao.getLocalVirtualDir(dto.parent, current.User.id)
+        val dir = fileDao.getLocalVirtualFile(dto.parent, current.User.id)
 
         val name = dto.name ?: target.name
         fileDao.save(FileEntity(
@@ -80,7 +83,7 @@ class UserDirController(
             // ^ findById
             linkTarget
         } else {
-            val top = fileDao.findTopVirtualDir(dto.path, current.User.id)
+            val top = fileDao.findTopVirtualFile(dto.path, current.User.id)
             val linkTarget = fileDao.findByIdOrNull(top.linkTarget)
                 ?: throw FailedResult.Dir.TargetNotFound
             if (!linkTarget.isDir) {
@@ -130,7 +133,7 @@ class UserDirController(
                 fileDao.findByParent(findVirtualByPath.id)
             }
         } else {
-            val top = fileDao.findTopVirtualDir(dto.path, current.User.id)
+            val top = fileDao.findTopVirtualFile(dto.path, current.User.id)
             val linkTarget = fileDao.findByIdOrNull(top.linkTarget)
                 ?: throw FailedResult.Dir.TargetNotFound
             if (!linkTarget.isDir) {
@@ -169,14 +172,14 @@ class UserDirController(
 
     @PostMapping("/api/user/file/delete")
     fun deleteItem(@RequestBody dto: DeleteDirReqDto): SampleResult {
-        val dir = fileDao.getLocalVirtualDir(dto.path, current.User.id)
-        fileDao.deleteById(dir.id)
+        val dir = fileDao.getLocalVirtualFile(dto.path, current.User.id)
+        deletionModule.doFileDeleteAction(dir.id)
         return SampleResult
     }
 
     @PostMapping("/api/user/file/rename")
     fun renameItem(@RequestBody dto: RenameDirReqDto): SampleResult {
-        val dir = fileDao.getLocalVirtualDir(dto.path, current.User.id)
+        val dir = fileDao.getLocalVirtualFile(dto.path, current.User.id)
         fileDao.rename(dir.id, dto.name)
         return SampleResult
     }

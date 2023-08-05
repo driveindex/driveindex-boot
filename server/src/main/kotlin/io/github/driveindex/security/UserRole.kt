@@ -16,5 +16,5 @@ enum class UserRole {
         }
     }
 
-    fun getRole(): String = "ROLE_$name"
+    private fun getRole(): String = "ROLE_$name"
 }

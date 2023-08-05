@@ -1,6 +1,6 @@
-package io.github.driveindex.h2.dao.onedrive
+package io.github.driveindex.database.dao.onedrive
 
-import io.github.driveindex.h2.entity.onedrive.OneDriveClientEntity
+import io.github.driveindex.database.entity.onedrive.OneDriveClientEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository

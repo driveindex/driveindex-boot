@@ -1,8 +1,8 @@
 package io.github.driveindex.module
 
 import io.github.driveindex.core.util.log
-import io.github.driveindex.h2.dao.AccountsDao
-import io.github.driveindex.h2.dao.ClientsDao
+import io.github.driveindex.database.dao.AccountsDao
+import io.github.driveindex.database.dao.ClientsDao
 import jakarta.annotation.PostConstruct
 import org.springframework.stereotype.Component
 import java.util.concurrent.ExecutorService

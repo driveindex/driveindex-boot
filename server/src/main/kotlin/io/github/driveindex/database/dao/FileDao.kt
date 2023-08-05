@@ -1,8 +1,8 @@
-package io.github.driveindex.h2.dao
+package io.github.driveindex.database.dao
 
 import io.github.driveindex.core.util.CanonicalPath
 import io.github.driveindex.exception.FailedResult
-import io.github.driveindex.h2.entity.FileEntity
+import io.github.driveindex.database.entity.FileEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -27,22 +27,28 @@ interface FileDao: JpaRepository<FileEntity, UUID> {
 
     @Query("from FileEntity where parentId=:parent")
     fun findByParent(parent: UUID): List<FileEntity>
+
+    @Query("from FileEntity where accountId=:account")
+    fun listByAccount(account: UUID): List<FileEntity>
+
+    @Query("from FileEntity where createBy=:user")
+    fun listByUser(user: UUID): List<FileEntity>
 }
 
-fun FileDao.getLocalVirtualDir(path: CanonicalPath, createBy: UUID): FileEntity {
-    val target = findTopVirtualDir(path, createBy)
+fun FileDao.getLocalVirtualFile(path: CanonicalPath, createBy: UUID): FileEntity {
+    val target = findTopVirtualFile(path, createBy)
     if (path != target.path) {
         throw FailedResult.Dir.ModifyRemote
     }
     return target
 }
 
-fun FileDao.findTopVirtualDir(path: CanonicalPath, createBy: UUID): FileEntity {
-    return findVirtualDirIntern(path, createBy)
+fun FileDao.findTopVirtualFile(path: CanonicalPath, createBy: UUID): FileEntity {
+    return findVirtualFileIntern(path, createBy)
         ?: throw FailedResult.Dir.TargetNotFound
 }
 
-private fun FileDao.findVirtualDirIntern(path: CanonicalPath, createBy: UUID, index: Int = 0): FileEntity? {
+private fun FileDao.findVirtualFileIntern(path: CanonicalPath, createBy: UUID, index: Int = 0): FileEntity? {
     if (index > path.length) {
         return null
     }
@@ -50,6 +56,6 @@ private fun FileDao.findVirtualDirIntern(path: CanonicalPath, createBy: UUID, in
         ?.takeIf { it.linkTarget != null }
         ?.let { return it }
     (index + 1).let {
-        return findVirtualDirIntern(path.subPath(it), createBy, it)
+        return findVirtualFileIntern(path.subPath(it), createBy, it)
     }
 }

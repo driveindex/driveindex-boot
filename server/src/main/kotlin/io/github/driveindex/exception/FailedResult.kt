@@ -72,6 +72,8 @@ class FailedResult private constructor(
         fun DuplicateAccountName(name: String, id: KUUID) =
             FailedResult(-100301, "账号名称已存在：$name",
                 jsonObjectOf("name" to name, "id" to id))
+
+        val DeleteFailed get() = FailedResult(-120301, "Client 删除失败")
     }
 
     object Dir {
@@ -80,6 +82,16 @@ class FailedResult private constructor(
         val ModifyRemote get() = FailedResult(-130103, "暂不支持操作远端目录")
         val NotADir get() = FailedResult(-130104, "目标非目录")
         val NotAFile get() = FailedResult(-130105, "目标非文件")
+    }
+
+    object AdminUser {
+        val UserNotFound get() = FailedResult(-140101, "用户不存在")
+    }
+
+    object User {
+        val UserFound get() = FailedResult(-150101, "用户名已存在")
+        val UserInvalid get() = FailedResult(-150102, "用户名不符合规则")
+        val NickInvalid get() = FailedResult(-150102, "用户昵称不符合规则")
     }
 }
 

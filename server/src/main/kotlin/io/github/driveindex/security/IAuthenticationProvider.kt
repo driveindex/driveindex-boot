@@ -1,7 +1,7 @@
 package io.github.driveindex.security
 
 import io.github.driveindex.exception.FailedResult
-import io.github.driveindex.h2.dao.UserDao
+import io.github.driveindex.database.dao.UserDao
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.Authentication
@@ -23,7 +23,7 @@ class IAuthenticationProvider(
     override fun authenticate(authentication: Authentication): Authentication? {
         authentication as UserPasswordToken
 
-        val entity = user.getValidUser(authentication.principal)?.takeIf {
+        val entity = user.getUserByUsername(authentication.principal)?.takeIf {
                 Objects.equals(it.password, authentication.credentials)
         } ?: throw UserException(FailedResult.Auth.WrongPassword)
 

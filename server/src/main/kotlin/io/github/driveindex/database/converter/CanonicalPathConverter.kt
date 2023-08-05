@@ -1,4 +1,4 @@
-package io.github.driveindex.h2.converter
+package io.github.driveindex.database.converter
 
 import io.github.driveindex.core.util.CanonicalPath
 import jakarta.persistence.AttributeConverter

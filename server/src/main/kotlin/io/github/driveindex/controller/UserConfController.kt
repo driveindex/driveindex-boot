@@ -2,7 +2,14 @@ package io.github.driveindex.controller
 
 import io.github.driveindex.client.ClientType
 import io.github.driveindex.core.util.SHA1
-import io.github.driveindex.dto.req.user.*
+import io.github.driveindex.database.dao.AccountsDao
+import io.github.driveindex.database.dao.ClientsDao
+import io.github.driveindex.database.dao.onedrive.OneDriveAccountDao
+import io.github.driveindex.database.dao.onedrive.OneDriveClientDao
+import io.github.driveindex.dto.req.user.ClientCreateReqDto
+import io.github.driveindex.dto.req.user.ClientEditReqDto
+import io.github.driveindex.dto.req.user.CommonSettingsReqDto
+import io.github.driveindex.dto.req.user.SetPwdReqDto
 import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.SampleResult
 import io.github.driveindex.dto.resp.admin.CommonSettingsRespDto
@@ -12,11 +19,8 @@ import io.github.driveindex.dto.resp.user.ClientsDto
 import io.github.driveindex.dto.resp.user.OneDriveAccountDetail
 import io.github.driveindex.dto.resp.user.OneDriveClientDetail
 import io.github.driveindex.exception.FailedResult
-import io.github.driveindex.h2.dao.AccountsDao
-import io.github.driveindex.h2.dao.ClientsDao
-import io.github.driveindex.h2.dao.onedrive.OneDriveAccountDao
-import io.github.driveindex.h2.dao.onedrive.OneDriveClientDao
 import io.github.driveindex.module.Current
+import io.github.driveindex.module.DeletionModule
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.*
@@ -28,13 +32,15 @@ import java.util.*
  */
 @RestController
 @Tag(name = "用户接口")
-class UseConfController(
+class UserConfController(
     private val current: Current,
     private val clientsDao: ClientsDao,
     private val accountsDao: AccountsDao,
 
     private val onedriveClientDao: OneDriveClientDao,
     private val onedriveAccountDao: OneDriveAccountDao,
+
+    private val deletionModule: DeletionModule,
 ) {
     @Operation(summary = "修改密码")
     @GetMapping("/api/user/password")
@@ -55,9 +61,9 @@ class UseConfController(
     @Operation(summary = "常规设置")
     @GetMapping("/api/user/common")
     fun getCommonSettings(): RespResult<CommonSettingsRespDto> {
-        val config = current.UserConfig
+        val config = current.User
         return CommonSettingsRespDto(
-            deltaTick = config.deltaTick,
+            nick = config.nick,
             corsOrigin = config.corsOrigin,
         ).resp()
     }
@@ -65,14 +71,18 @@ class UseConfController(
     @Operation(summary = "常规设置")
     @PostMapping("/api/user/common")
     fun setCommonSettings(
-        @RequestBody dto: SetCommonReqDto
+        @RequestBody dto: CommonSettingsReqDto
     ): SampleResult {
-        if (dto.deltaTick < 0) {
-            throw FailedResult.UserSettings.DeltaTrackDuration
-        }
-        current.UserConfig = current.UserConfig.also {
-            it.deltaTick = dto.deltaTick
-            it.corsOrigin = dto.corsOrigin
+        current.User = current.User.also {
+            dto.nick?.let { nick ->
+                if (nick.length > 50) {
+                    throw FailedResult.User.NickInvalid
+                }
+                it.nick = nick
+            }
+            dto.corsOrigin?.let { corsOrigin ->
+                it.corsOrigin = corsOrigin
+            }
         }
         return SampleResult
     }
@@ -132,8 +142,8 @@ class UseConfController(
 
     @Operation(summary = "删除 Client 下登录的账号")
     @PostMapping("/api/user/account/delete")
-    fun deleteAccount(@RequestParam("account_id") accountId: UUID): SampleResult {
-        accountsDao.deleteById(accountId)
+    fun deleteAccountPublic(@RequestParam("account_id") accountId: UUID): SampleResult {
+        deletionModule.doAccountDeleteAction(accountId)
         return SampleResult
     }
 
@@ -153,10 +163,29 @@ class UseConfController(
 
     @Operation(summary = "删除 Client")
     @PostMapping("/api/user/client/delete")
-    fun deleteClient(@RequestBody dto: ClientDeleteReqDto): SampleResult {
-        val client = clientsDao.getClient(dto.clientId)
+    fun deleteClient(@RequestParam("client_id") clientId: UUID): SampleResult {
+        val client = clientsDao.getClient(clientId)
             ?: throw FailedResult.Client.NotFound
-        client.type.delete(dto.clientId)
+        deletionModule.doClientDeleteAction(client.id)
         return SampleResult
     }
+}
+
+fun String.checkNick(): String {
+    if (length > 50) {
+        throw FailedResult.User.NickInvalid
+    }
+    return this
+}
+
+fun String.checkUsername(): String {
+    val username = lowercase()
+    if (!username.matches("^(?!.*\\.{2,})(?!.*[áàâäãåæéèêëíìîïóòôöõøúùûüýÿ&=<>+,!])(?!.*[.])[a-zA-Z0-9]+\$".toRegex())) {
+        throw FailedResult.User.UserInvalid
+    } else if (username.startsWith("!")) {
+        throw FailedResult.User.UserInvalid
+    } else if (username.length > 32) {
+        throw FailedResult.User.UserInvalid
+    }
+    return username
 }

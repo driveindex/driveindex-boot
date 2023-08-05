@@ -1,12 +1,13 @@
-package io.github.driveindex.h2.entity
+package io.github.driveindex.database.entity
 
 import io.github.driveindex.client.ClientType
 import io.github.driveindex.core.util.CanonicalPath
-import jakarta.persistence.Cacheable
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.util.*
 
 /**
@@ -18,6 +19,7 @@ import java.util.*
 data class FileEntity(
     @Id
     @Column(name = "id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "account_id")

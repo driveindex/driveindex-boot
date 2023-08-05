@@ -211,5 +211,4 @@ object CanonicalPathSerializer: KSerializer<CanonicalPath> {
     override fun serialize(encoder: Encoder, value: CanonicalPath) {
         encoder.encodeString(value.toString())
     }
-
 }

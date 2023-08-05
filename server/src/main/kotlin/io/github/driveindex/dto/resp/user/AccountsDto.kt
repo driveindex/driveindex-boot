@@ -1,9 +1,11 @@
 package io.github.driveindex.dto.resp.user
 
-import java.util.*
+import io.github.driveindex.core.util.KUUID
+import kotlinx.serialization.Serializable
 
-data class AccountsDto<T: Any>(
-    val id: UUID,
+@Serializable
+data class AccountsDto<T: @Serializable Any>(
+    val id: KUUID,
     val displayName: String,
     val userPrincipalName: String,
     val createAt: Long,
@@ -11,6 +13,7 @@ data class AccountsDto<T: Any>(
     val detail: T,
 )
 
+@Serializable
 data class OneDriveAccountDetail(
     val azureUserId: String,
 )

@@ -29,7 +29,8 @@ class Application {
             context = Bootstrap(Application::class.java)
                 .setPort(ConfigManager.Port)
                 .setDatasource(
-                        ConfigManager.SqlDatabasePath,
+                        ConfigManager.SqlDatabaseHost,
+                        ConfigManager.SqlDatabaseName,
                         ConfigManager.SqlUsername,
                         ConfigManager.SqlPassword,
                 )
@@ -59,11 +60,12 @@ private class Bootstrap(clazz: Class<*>) {
     }
 
     fun setDatasource(
-            dbPath: String, dbUsername: String, dbPassword: String
+            dbHost: String, dbDatabase: String,
+            dbUsername: String, dbPassword: String
     ): Bootstrap {
         properties["spring.datasource.username"] = dbUsername
         properties["spring.datasource.password"] = dbPassword
-        properties["spring.datasource.url"] = "jdbc:h2:file:$dbPath/${Application.APPLICATION_BASE_NAME_LOWER}"
+        properties["spring.datasource.url"] = "jdbc:mariadb://$dbHost/$dbDatabase"
         return this
     }
 

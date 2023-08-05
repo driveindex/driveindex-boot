@@ -11,6 +11,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    open-in-view: false
+    database-platform: org.hibernate.dialect.MariaDB103Dialect
 #    properties:
 #      hibernate:
 #        cache:
@@ -19,8 +21,7 @@ spring:
 #          jcache:
 #            provider: org.ehcache.jcache.JCacheCachingProvider
 #            uri: ehcache.xml
-    open-in-view: false
   datasource:
-    driver-class-name: org.h2.Driver
+    driver-class-name: org.mariadb.jdbc.Driver
   flyway:
     locations: classpath:/flyway

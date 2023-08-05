@@ -1,7 +1,14 @@
 package io.github.driveindex.dto.req.user
 
+import io.github.driveindex.core.util.KUUID
 import kotlinx.serialization.Serializable
 
+
+@Serializable
+data class CommonSettingsReqDto(
+    val nick: String? = null,
+    val corsOrigin: String? = null,
+)
 
 @Serializable
 data class GetCommonReqDto(
@@ -11,8 +18,3 @@ data class GetCommonReqDto(
         DeltaTrack, CorsOrigin
     }
 }
-
-data class SetCommonReqDto(
-    val deltaTick: Int,
-    val corsOrigin: String
-)

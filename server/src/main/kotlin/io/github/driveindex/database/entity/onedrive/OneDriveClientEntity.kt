@@ -1,4 +1,4 @@
-package io.github.driveindex.h2.entity.onedrive
+package io.github.driveindex.database.entity.onedrive
 
 import feign.Feign
 import io.github.driveindex.Application
