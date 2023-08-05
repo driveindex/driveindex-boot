@@ -16,8 +16,3 @@ data class UserCreateRequestDto(
     val role: UserRole = UserRole.USER,
     val enable: Boolean = true,
 )
-
-@Serializable
-data class UserDeleteRequestDto(
-    val username: String
-)
