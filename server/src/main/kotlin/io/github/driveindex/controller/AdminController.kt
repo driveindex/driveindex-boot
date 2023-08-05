@@ -36,6 +36,7 @@ class AdminController(
             password = dto.password,
             nick = dto.nick.checkNick(),
             role = dto.role,
+            enable = dto.enable,
         ))
         return SampleResult
     }

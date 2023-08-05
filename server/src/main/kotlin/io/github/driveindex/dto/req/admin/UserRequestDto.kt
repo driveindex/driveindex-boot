@@ -11,9 +11,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UserCreateRequestDto(
     val username: String,
+    val password: String,
     val nick: String = "",
     val role: UserRole = UserRole.USER,
-    val password: String,
+    val enable: Boolean = true,
 )
 
 @Serializable
