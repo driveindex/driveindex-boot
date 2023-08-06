@@ -27,7 +27,6 @@ class Application {
         @JvmStatic
         fun main(args: Array<String>) {
             context = Bootstrap(Application::class.java)
-                .setPort(ConfigManager.Port)
                 .setDatasource(
                         ConfigManager.SqlDatabaseHost,
                         ConfigManager.SqlDatabaseName,
@@ -53,11 +52,6 @@ class Application {
 private class Bootstrap(clazz: Class<*>) {
     private val application: SpringApplication = SpringApplication(clazz)
     private val properties: MutableMap<String, Any> = HashMap()
-
-    fun setPort(port: Int): Bootstrap {
-        properties["server.port"] = port
-        return this
-    }
 
     fun setDatasource(
             dbHost: String, dbDatabase: String,

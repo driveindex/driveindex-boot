@@ -1,3 +1,4 @@
+
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -65,34 +66,4 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-}
-
-fun findStringProperty(name: String): String? {
-    return System.getenv(name.replace(".", "_"))
-        ?.takeIf { it.isNotBlank() }
-        ?: findProperty(name)?.toString()
-}
-fun requireStringProperty(name: String): String {
-    return findStringProperty(name)
-        ?: throw IllegalArgumentException("property not found")
-}
-
-findStringProperty("publishing.gitlab.registry.host").let { registryHost ->
-    tasks.bootBuildImage {
-        imageName.set("$registryHost/drive-index/driveindex-server-boot")
-        publish.set(true)
-        tags.set(listOf("latest", version.toString()))
-        environment.set(mapOf(
-            "BP_SPRING_CLOUD_BINDINGS_DISABLED" to true.toString(),
-            "BPL_SPRING_CLOUD_BINDINGS_DISABLED" to true.toString(),
-        ))
-        docker {
-            host.set(findStringProperty("publishing.docker.sock")
-                ?: "unix:///var/run/docker.sock")
-            publishRegistry {
-                username.set("mhmzx")
-                token.set(requireStringProperty("publishing.gitlab.token"))
-            }
-        }
-    }
 }
