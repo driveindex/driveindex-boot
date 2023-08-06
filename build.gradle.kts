@@ -1,6 +1,6 @@
 plugins {
-    id("org.springframework.boot") version "3.0.5" apply false
-    id("io.spring.dependency-management") version "1.1.0" apply false
+    id("org.springframework.boot") version "3.1.2" apply false
+    id("io.spring.dependency-management") version "1.1.2" apply false
 
     val kotlin = "1.9.0"
     kotlin("jvm") version kotlin apply false
