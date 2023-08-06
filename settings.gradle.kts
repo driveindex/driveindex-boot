@@ -15,5 +15,3 @@ dependencyResolutionManagement {
 rootProject.name = "driveindex-boot"
 
 include("server")
-include("web")
-include("docker")
