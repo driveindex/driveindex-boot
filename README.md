@@ -16,6 +16,6 @@ java -jar driveindex.jar --config="./config/driveindex.ini"
 
 ## 开发环境
 
-+ IDE：JetBrains IDEA Ultimate 2022.3.2
-+ Java：JDK 17.0.6
-+ Database：H2
++ IDE：JetBrains IDEA Ultimate 2023.2
++ Java：JDK 17.0.8
++ Database：MariaDB 10.7.8
