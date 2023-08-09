@@ -1,5 +1,5 @@
 plugins {
-    id("org.springframework.boot") version "3.1.2" apply false
+    id("org.springframework.boot") version "3.0.9" apply false
     id("io.spring.dependency-management") version "1.1.2" apply false
 
     val kotlin = "1.9.0"

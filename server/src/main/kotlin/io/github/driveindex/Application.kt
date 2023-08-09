@@ -26,7 +26,9 @@ class Application {
 
         @JvmStatic
         fun main(args: Array<String>) {
+            setupConfig(args)
             context = Bootstrap(Application::class.java)
+                .setPort(ConfigManager.Port)
                 .setDatasource(
                         ConfigManager.SqlDatabaseHost,
                         ConfigManager.SqlDatabaseName,
@@ -36,6 +38,16 @@ class Application {
                 .setDebug(ConfigManager.Debug)
                 .setLogPath(ConfigManager.LogPath)
                 .run(args)
+        }
+
+        private fun setupConfig(args: Array<String>) {
+            for (arg in args) {
+                if (arg.startsWith("--config=")) {
+                    ConfigManager.setConfigFile(arg.substring(9))
+                    return
+                }
+            }
+            ConfigManager.setConfigFile(null)
         }
 
         inline fun <reified T> getBean(): T {
@@ -60,6 +72,11 @@ private class Bootstrap(clazz: Class<*>) {
         properties["spring.datasource.username"] = dbUsername
         properties["spring.datasource.password"] = dbPassword
         properties["spring.datasource.url"] = "jdbc:mariadb://$dbHost/$dbDatabase"
+        return this
+    }
+
+    fun setPort(port: Int): Bootstrap {
+        properties["server.port"] = port
         return this
     }
 

@@ -13,7 +13,19 @@ plugins {
 
 group = "io.github.driveindex"
 version = "2.0.0-alpha01"
-java.sourceCompatibility = JavaVersion.VERSION_17
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.bootJar {
+    archiveBaseName = "driveindex"
+}
+
+springBoot {
+    mainClass = "io.github.driveindex.Application"
+}
 
 dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

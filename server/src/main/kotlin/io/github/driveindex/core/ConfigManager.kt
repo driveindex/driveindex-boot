@@ -6,7 +6,6 @@ import io.github.driveindex.core.util.log
 import org.ini4j.Profile
 import org.ini4j.Wini
 import org.ini4j.spi.BeanTool
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.io.File
 import java.io.IOException
@@ -23,6 +22,7 @@ import kotlin.system.exitProcess
 class ConfigManager {
     companion object {
         private const val SectionCommon = "common"
+        val Port by IniVal.New(SectionCommon, "port", 8080)
         val Debug by IniVal.New(SectionCommon, "debug", false)
         val LogPath by IniVal.New(SectionCommon, "log-dir", "/var/log/driveindex")
 
@@ -59,38 +59,33 @@ class ConfigManager {
 
 
 
-
-        private var config = File("./config", "driveindex.ini")
-        private val ini: Wini = Wini()
-
-        init {
+        fun setConfigFile(path: String?) {
+            val config: File
+            if (path != null) {
+                config = File(path)
+                if (!config.isFile) {
+                    log.error("配置文件不可用：$path")
+                    exitProcess(-1)
+                }
+            } else {
+                config = File("./config.ini")
+            }
+            val configPath: String = try {
+                config.canonicalPath
+            } catch (e: IOException) {
+                config.path
+            }
+            log.info("使用配置文件：$configPath")
+            if (!config.exists()) {
+                val parent = config.parentFile
+                if ((parent.exists() || !parent.mkdirs()) && !config.createNewFile()) {
+                    log.warn("配置文件创建失败，将使用默认配置！")
+                }
+            }
             ini.file = config
         }
-    }
 
-    init {
-        if (!config.exists()) {
-            val parent = config.parentFile
-            if ((parent.exists() || !parent.mkdirs()) && !config.createNewFile()) {
-                log.warn("配置文件创建失败，将使用默认配置！")
-            }
-        }
-        ini.file = config
-    }
-
-    @Value("\${config:./config/driveindex.ini}")
-    fun setConfigFile(path: String) {
-        config = File(path)
-        if (!config.isFile) {
-            log.error("配置文件不可用：$path")
-            exitProcess(-1)
-        }
-        val configPath: String = try {
-            config.canonicalPath
-        } catch (e: IOException) {
-            config.path
-        }
-        log.info("使用配置文件：$configPath")
+        private val ini: Wini = Wini()
     }
 
     class IniVar<TypeT>(section: String, key: String, defVal: TypeT, clazz: Class<TypeT>) :

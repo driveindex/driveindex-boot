@@ -10,7 +10,11 @@ import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
-import java.lang.IllegalArgumentException
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.json.KotlinSerializationJsonHttpMessageConverter
 import java.util.*
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -30,6 +34,17 @@ fun jsonObjectOf(vararg contents: Pair<String, Any>): JsonObject {
                 else -> throw IllegalArgumentException("不支持的类型")
             })
         }
+    }
+}
+
+@Configuration
+class GsonConfig {
+    @Bean
+    fun customConverters(): HttpMessageConverters {
+        val messageConverters: MutableCollection<HttpMessageConverter<*>> = ArrayList()
+        val gsonHttpMessageConverter = KotlinSerializationJsonHttpMessageConverter(JsonGlobal)
+        messageConverters.add(gsonHttpMessageConverter)
+        return HttpMessageConverters(true, messageConverters)
     }
 }
 
