@@ -2,7 +2,7 @@ package io.github.driveindex.module
 
 import io.github.driveindex.core.util.log
 import io.github.driveindex.database.dao.*
-import jakarta.persistence.EntityManager
+import jakarta.persistence.EntityManagerFactory
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -12,7 +12,7 @@ import java.util.*
  */
 @Component
 class DeletionModule(
-    private val em: EntityManager,
+    private val em: EntityManagerFactory,
 
     private val userDao: UserDao,
     private val clientsDao: ClientsDao,
@@ -84,8 +84,8 @@ class DeletionModule(
         sharedLinkDao.deleteById(linkId)
     }
 
-    private fun EntityManager.transaction(errorMessage: String, block: () -> Unit) {
-        val transaction = transaction
+    private fun EntityManagerFactory.transaction(errorMessage: String, block: () -> Unit) {
+        val transaction = createEntityManager().transaction
         try {
             transaction.begin()
             block()

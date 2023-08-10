@@ -17,6 +17,7 @@ data class AccountsEntity(
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "client_id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val parentClientId: UUID,
 
     @Column(name = "display_name")
@@ -29,6 +30,7 @@ data class AccountsEntity(
     val createAt: Long = System.currentTimeMillis(),
 
     @Column(name = "create_by")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val createBy: UUID,
 
     @Column(name = "modify_at")

@@ -4,10 +4,9 @@ import feign.Feign
 import io.github.driveindex.Application
 import io.github.driveindex.feigh.AzureGraphClient
 import io.github.driveindex.feigh.AzurePortalClient
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import jakarta.persistence.*
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.util.*
 
 @Entity
@@ -15,6 +14,7 @@ import java.util.*
 data class OneDriveClientEntity(
     @Id
     @Column(name = "client_id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val id: UUID,
 
     @Column(name = "azure_client_id")
@@ -27,6 +27,7 @@ data class OneDriveClientEntity(
     val tenantId: String = "common",
 
     @Column(name = "azure_client_endpoint")
+    @Enumerated(EnumType.STRING)
     val endPoint: EndPoint = EndPoint.Global,
 ) {
     enum class EndPoint(

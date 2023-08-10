@@ -1,10 +1,7 @@
 package io.github.driveindex.database.entity
 
 import io.github.driveindex.client.ClientType
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import java.util.*
@@ -21,6 +18,7 @@ data class ClientsEntity(
     var name: String,
 
     @Column(name = "type")
+    @Enumerated(EnumType.STRING)
     val type: ClientType,
 
     @Column(name = "support_delta")
@@ -30,6 +28,7 @@ data class ClientsEntity(
     val createAt: Long = System.currentTimeMillis(),
 
     @Column(name = "create_by")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val createBy: UUID,
 
     @Column(name = "modify_at")

@@ -6,7 +6,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
-import java.util.UUID
+import java.util.*
 
 /**
  * @author sgpublic
@@ -21,9 +21,11 @@ data class SharedLinkEntity(
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "root_target")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val rootTarget: UUID,
 
     @Column(name = "parent_account")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val parentAccount: UUID,
 
     @Column(name = "expired_time")

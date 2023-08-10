@@ -55,10 +55,10 @@ class OneDriveAction(
         onedriveClientDao.getReferenceById(clientId).let { entity ->
             val state = linkedMapOf<String, Any>(
                 "id" to clientId,
+                "ts" to System.currentTimeMillis(),
                 "type" to client.type,
-                "ts" to System.currentTimeMillis()
             )
-            state["sign"] = "${state.joinToSortedString("&")}${ConfigManager.TokenSecurityKey}".TO_BASE64
+            state["sign"] = "${state.joinToSortedString("&")}${ConfigManager.TokenSecurityKey}".MD5_FULL
             return ("${entity.endPoint.LoginHosts}/${entity.tenantId}/oauth2/v2.0/authorize?" +
                 "client_id=${entity.clientId}" +
                 "&response_type=code" +
@@ -88,26 +88,43 @@ class OneDriveAction(
             throw FailedResult.Auth.AuthTimeout
         }
 
-        val client = try {
+        val clientId = try {
             UUID.fromString(param["id"])
         } catch (e: Exception) {
-            null
-        }?.let { clientId ->
-            val client = clientDao.getClient(clientId)
-                ?: throw FailedResult.Auth.IllegalRequest
-            param["type"]?.let type@{
-                return@type ClientType.valueOf(it)
-            }?.takeIf {
-                client.type == it
-            } ?: throw FailedResult.Auth.IllegalRequest
-            return@let onedriveClientDao.getReferenceById(client.id)
-        } ?: throw FailedResult.Auth.IllegalRequest
+            throw FailedResult.Auth.IllegalRequest
+        }
+        val type = try {
+            ClientType.valueOf(param["type"]!!)
+        } catch (e: Exception) {
+            throw FailedResult.Auth.IllegalRequest
+        }
+        val originSign = param["sign"]
+            ?: throw FailedResult.Auth.IllegalRequest
+        val sign = "${linkedMapOf<String, Any>(
+            "id" to clientId,
+            "ts" to ts,
+            "type" to type,
+        ).joinToSortedString("&")}${
+            ConfigManager.TokenSecurityKey
+        }".MD5_FULL
+        if (originSign != sign) {
+            throw FailedResult.Auth.IllegalRequest
+        }
 
-        val token = client.endPoint.Portal.getToken(
-            client.tenantId, dto.code, client.clientSecret
+        val client = clientDao.getClient(clientId)
+            ?: throw FailedResult.Auth.IllegalRequest
+        param["type"]?.let type@{
+            return@type ClientType.valueOf(it)
+        }?.takeIf {
+            client.type == it
+        } ?: throw FailedResult.Auth.IllegalRequest
+        val onedriveClient = onedriveClientDao.getReferenceById(client.id)
+
+        val token = onedriveClient.endPoint.Portal.getToken(
+            onedriveClient.tenantId, dto.code, onedriveClient.clientSecret
         )
 
-        val me = client.endPoint.Graph.Me(token.tokenStr)
+        val me = onedriveClient.endPoint.Graph.Me(token.tokenStr)
 
         // 允许账号失效后重新登录
         onedriveAccountDao.findByAzureId(

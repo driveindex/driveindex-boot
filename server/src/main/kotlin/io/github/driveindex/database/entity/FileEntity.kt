@@ -2,10 +2,7 @@ package io.github.driveindex.database.entity
 
 import io.github.driveindex.client.ClientType
 import io.github.driveindex.core.util.CanonicalPath
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import java.util.*
@@ -23,12 +20,15 @@ data class FileEntity(
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "account_id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val accountId: UUID?,
 
     @Column(name = "client_type")
+    @Enumerated(EnumType.STRING)
     val clientType: ClientType?,
 
     @Column(name = "create_by")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val createBy: UUID?,
 
     @Column(name = "create_at")
@@ -41,6 +41,7 @@ data class FileEntity(
     var name: String,
 
     @Column(name = "parent_id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val parentId: UUID?,
 
     @Column(name = "path")
@@ -50,6 +51,7 @@ data class FileEntity(
     val isDir: Boolean,
 
     @Column(name = "link_target")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val linkTarget: UUID? = null,
 
     @Column(name = "size")
