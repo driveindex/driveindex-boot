@@ -52,7 +52,7 @@ class OneDriveAction(
         @RequestParam("redirect_uri", required = true) redirectUri: String
     ): RespResult<String> {
         val client = getClient(clientId)
-        onedriveClientDao.getReferenceById(clientId).let { entity ->
+        onedriveClientDao.getClient(clientId).let { entity ->
             val state = linkedMapOf<String, Any>(
                 "id" to clientId,
                 "ts" to System.currentTimeMillis(),
@@ -118,7 +118,7 @@ class OneDriveAction(
         }?.takeIf {
             client.type == it
         } ?: throw FailedResult.Auth.IllegalRequest
-        val onedriveClient = onedriveClientDao.getReferenceById(client.id)
+        val onedriveClient = onedriveClientDao.getClient(client.id)
 
         val token = onedriveClient.endPoint.Portal.getToken(
             onedriveClient.tenantId, dto.code, onedriveClient.clientSecret
@@ -216,7 +216,7 @@ class OneDriveAction(
             }
             clientDao.save(it)
         } ?: throw FailedResult.Client.NotFound
-        onedriveClientDao.getReferenceById(clientId).also {
+        onedriveClientDao.getClient(clientId).also {
             edition.clientSecret?.let { secret ->
                 if (it.clientSecret == secret) {
                     return@also
@@ -235,12 +235,12 @@ class OneDriveAction(
     @Transactional
     override fun delta(accountId: UUID) {
         log.info("account delta track start! account id: $accountId")
-        val endPoint = onedriveClientDao.getReferenceById(
-            accountDao.getReferenceById(accountId).parentClientId
+        val endPoint = onedriveClientDao.getClient(
+            accountDao.getAccount(accountId).parentClientId
         ).endPoint
         var delta: AzureGraphDtoV2_Me_Drive_Root_Delta
         val token: String
-        val account = onedriveAccountDao.getReferenceById(accountId).also {
+        val account = onedriveAccountDao.getAccount(accountId).also {
             token = it.accessToken
             delta = AzureGraphDtoV2_Me_Drive_Root_Delta(
                 "token=${it.deltaToken ?: ""}", null, listOf()

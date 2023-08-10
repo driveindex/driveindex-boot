@@ -95,7 +95,7 @@ class UserConfController(
                 modifyAt = entity.modifyAt,
                 detail = when (entity.type) {
                     ClientType.OneDrive ->
-                        onedriveClientDao.getReferenceById(entity.id).let {
+                        onedriveClientDao.getClient(entity.id).let {
                             return@let OneDriveClientDetail(
                                 clientId = it.clientId,
                                 tenantId = it.tenantId,
@@ -123,7 +123,7 @@ class UserConfController(
                 modifyAt = entity.modifyAt,
                 detail = when (client.type) {
                     ClientType.OneDrive ->
-                        onedriveAccountDao.getReferenceById(entity.id).let {
+                        onedriveAccountDao.getAccount(entity.id).let {
                             return@let OneDriveAccountDetail(
                                 azureUserId = it.azureUserId,
                             )
@@ -136,7 +136,7 @@ class UserConfController(
 
     @Operation(summary = "删除 Client 下登录的账号")
     @PostMapping("/api/user/account/delete")
-    fun deleteAccountPublic(@RequestBody dto: AccountDeleteReqDto): SampleResult {
+    fun deleteAccount(@RequestBody dto: AccountDeleteReqDto): SampleResult {
         deletionModule.doAccountDeleteAction(dto.accountId)
         return SampleResult
     }

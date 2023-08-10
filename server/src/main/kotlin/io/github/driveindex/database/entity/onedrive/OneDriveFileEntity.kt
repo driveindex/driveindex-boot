@@ -4,6 +4,8 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.util.*
 
 /**
@@ -15,9 +17,11 @@ import java.util.*
 data class OneDriveFileEntity(
     @Id
     @Column(name = "id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "azure_account_id")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val accountId: UUID,
 
     @Column(name = "file_id")

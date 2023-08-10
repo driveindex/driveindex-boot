@@ -8,6 +8,9 @@ import java.util.*
 
 @Repository
 interface OneDriveAccountDao: JpaRepository<OneDriveAccountEntity, UUID> {
+    @Query("from OneDriveAccountEntity where id=:id")
+    fun getAccount(accountId: UUID): OneDriveAccountEntity
+
     @Query("from OneDriveAccountEntity where id in :ids and azureUserId=:azureId")
     fun findByAzureId(ids: List<UUID>, azureId: String): OneDriveAccountEntity?
 

@@ -4,7 +4,7 @@ import io.github.driveindex.database.entity.onedrive.OneDriveFileEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
-import java.util.UUID
+import java.util.*
 
 /**
  * @author sgpublic
@@ -12,6 +12,8 @@ import java.util.UUID
  */
 @Repository
 interface OneDriveFileDao: JpaRepository<OneDriveFileEntity, UUID> {
+    @Query("from OneDriveFileEntity where id=:id")
+    fun getFile(id: UUID): OneDriveFileEntity?
     @Query("from OneDriveFileEntity where fileId=:id")
     fun findByParentReference(id: String): OneDriveFileEntity?
 }

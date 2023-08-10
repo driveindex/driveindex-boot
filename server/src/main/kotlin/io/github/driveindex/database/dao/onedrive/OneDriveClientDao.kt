@@ -8,6 +8,8 @@ import java.util.*
 
 @Repository
 interface OneDriveClientDao: JpaRepository<OneDriveClientEntity, UUID> {
+    @Query("from OneDriveClientEntity where id=:id")
+    fun getClient(id: UUID): OneDriveClientEntity
     @Query("from OneDriveClientEntity where" +
         " id in :ids" +
         " and clientId=:azureClientId" +
