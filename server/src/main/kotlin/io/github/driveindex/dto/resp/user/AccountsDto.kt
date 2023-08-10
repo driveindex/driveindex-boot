@@ -4,7 +4,7 @@ import io.github.driveindex.core.util.KUUID
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AccountsDto<T: @Serializable Any>(
+data class AccountsDto<T: AccountDetail>(
     val id: KUUID,
     val displayName: String,
     val userPrincipalName: String,
@@ -14,6 +14,9 @@ data class AccountsDto<T: @Serializable Any>(
 )
 
 @Serializable
+sealed class AccountDetail
+
+@Serializable
 data class OneDriveAccountDetail(
     val azureUserId: String,
-)
+): AccountDetail()

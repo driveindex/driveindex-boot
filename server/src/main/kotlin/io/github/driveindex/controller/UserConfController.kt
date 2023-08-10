@@ -14,10 +14,7 @@ import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.SampleResult
 import io.github.driveindex.dto.resp.admin.CommonSettingsRespDto
 import io.github.driveindex.dto.resp.resp
-import io.github.driveindex.dto.resp.user.AccountsDto
-import io.github.driveindex.dto.resp.user.ClientsDto
-import io.github.driveindex.dto.resp.user.OneDriveAccountDetail
-import io.github.driveindex.dto.resp.user.OneDriveClientDetail
+import io.github.driveindex.dto.resp.user.*
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.module.Current
 import io.github.driveindex.module.DeletionModule
@@ -90,8 +87,8 @@ class UserConfController(
 
     @Operation(summary = "枚举 Client 配置")
     @GetMapping("/api/user/client")
-    fun listClients(): RespResult<List<ClientsDto<*>>> {
-        val list: ArrayList<ClientsDto<*>> = ArrayList()
+    fun listClients(): RespResult<List<ClientsDto<out ClientDetail>>> {
+        val list: ArrayList<ClientsDto<out ClientDetail>> = ArrayList()
         for (entity in clientsDao.listByUser(current.User.id)) {
             list.add(ClientsDto(
                 id = entity.id,

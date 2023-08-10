@@ -1,11 +1,13 @@
 package io.github.driveindex.dto.resp.user
 
 import io.github.driveindex.client.ClientType
+import io.github.driveindex.core.util.KUUID
 import io.github.driveindex.database.entity.onedrive.OneDriveClientEntity
-import java.util.*
+import kotlinx.serialization.Serializable
 
-data class ClientsDto<T: Any>(
-    val id: UUID,
+@Serializable
+data class ClientsDto<T: ClientDetail>(
+    val id: KUUID,
     var name: String,
     val type: ClientType,
     val createAt: Long,
@@ -13,8 +15,12 @@ data class ClientsDto<T: Any>(
     val detail: T,
 )
 
+@Serializable
+sealed class ClientDetail
+
+@Serializable
 data class OneDriveClientDetail(
     val clientId: String,
     val tenantId: String,
     val endPoint: OneDriveClientEntity.EndPoint,
-)
+): ClientDetail()
