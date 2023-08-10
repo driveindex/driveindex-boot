@@ -1,5 +1,6 @@
 package io.github.driveindex.dto.req.admin
 
+import io.github.driveindex.core.util.KUUID
 import io.github.driveindex.security.UserRole
 import kotlinx.serialization.Serializable
 
@@ -15,4 +16,9 @@ data class UserCreateRequestDto(
     val nick: String = "",
     val role: UserRole = UserRole.USER,
     val enable: Boolean = true,
+)
+
+@Serializable
+data class UserDeleteRequestDto(
+    val userId: KUUID,
 )

@@ -20,7 +20,6 @@ data class ClientEditReqDto(
 )
 
 @Serializable
-data class ClientLoginReqDto(
+data class ClientDeleteReqDto(
     val clientId: KUUID,
-    val redirectUri: String,
 )

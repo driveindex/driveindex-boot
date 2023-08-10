@@ -6,10 +6,7 @@ import io.github.driveindex.database.dao.AccountsDao
 import io.github.driveindex.database.dao.ClientsDao
 import io.github.driveindex.database.dao.onedrive.OneDriveAccountDao
 import io.github.driveindex.database.dao.onedrive.OneDriveClientDao
-import io.github.driveindex.dto.req.user.ClientCreateReqDto
-import io.github.driveindex.dto.req.user.ClientEditReqDto
-import io.github.driveindex.dto.req.user.CommonSettingsReqDto
-import io.github.driveindex.dto.req.user.SetPwdReqDto
+import io.github.driveindex.dto.req.user.*
 import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.SampleResult
 import io.github.driveindex.dto.resp.admin.CommonSettingsRespDto
@@ -20,8 +17,10 @@ import io.github.driveindex.module.Current
 import io.github.driveindex.module.DeletionModule
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.web.bind.annotation.*
-import java.util.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RestController
 
 /**
  * @author sgpublic
@@ -113,8 +112,8 @@ class UserConfController(
 
     @Operation(summary = "枚举 Client 下登录的账号")
     @GetMapping("/api/user/account")
-    fun listAccount(@RequestParam("client_id") clientId: UUID): RespResult<List<AccountsDto<*>>> {
-        val client = clientsDao.getClient(clientId)
+    fun listAccount(@RequestBody dto: ClientListReqDto): RespResult<List<AccountsDto<*>>> {
+        val client = clientsDao.getClient(dto.clientId)
             ?: throw FailedResult.Client.NotFound
         val list: ArrayList<AccountsDto<*>> = ArrayList()
         for (entity in accountsDao.listByClient(client.id)) {
@@ -139,8 +138,8 @@ class UserConfController(
 
     @Operation(summary = "删除 Client 下登录的账号")
     @PostMapping("/api/user/account/delete")
-    fun deleteAccountPublic(@RequestParam("account_id") accountId: UUID): SampleResult {
-        deletionModule.doAccountDeleteAction(accountId)
+    fun deleteAccountPublic(@RequestBody dto: AccountDeleteReqDto): SampleResult {
+        deletionModule.doAccountDeleteAction(dto.accountId)
         return SampleResult
     }
 
@@ -160,8 +159,8 @@ class UserConfController(
 
     @Operation(summary = "删除 Client")
     @PostMapping("/api/user/client/delete")
-    fun deleteClient(@RequestParam("client_id") clientId: UUID): SampleResult {
-        val client = clientsDao.getClient(clientId)
+    fun deleteClient(@RequestBody dto: ClientDeleteReqDto): SampleResult {
+        val client = clientsDao.getClient(dto.clientId)
             ?: throw FailedResult.Client.NotFound
         deletionModule.doClientDeleteAction(client.id)
         return SampleResult

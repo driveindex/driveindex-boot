@@ -3,6 +3,7 @@ package io.github.driveindex.controller
 import io.github.driveindex.database.dao.UserDao
 import io.github.driveindex.database.entity.UserEntity
 import io.github.driveindex.dto.req.admin.UserCreateRequestDto
+import io.github.driveindex.dto.req.admin.UserDeleteRequestDto
 import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.SampleResult
 import io.github.driveindex.dto.resp.admin.CommonSettingsUserItemRespDto
@@ -11,8 +12,10 @@ import io.github.driveindex.dto.resp.resp
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.module.DeletionModule
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.web.bind.annotation.*
-import java.util.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RestController
 import kotlin.jvm.optionals.getOrNull
 
 @RestController
@@ -72,8 +75,8 @@ class AdminController(
     }
 
     @PostMapping("/api/admin/user/delete")
-    fun deleteUsers(@RequestParam("user_id") uuid: UUID): SampleResult {
-        val user = userDao.findById(uuid).getOrNull()
+    fun deleteUsers(@RequestBody dto: UserDeleteRequestDto): SampleResult {
+        val user = userDao.findById(dto.userId).getOrNull()
             ?: throw FailedResult.AdminUser.UserNotFound
         deletionModule.doUserDeleteAction(user.id)
         return SampleResult

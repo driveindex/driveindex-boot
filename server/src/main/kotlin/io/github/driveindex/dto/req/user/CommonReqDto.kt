@@ -11,10 +11,11 @@ data class CommonSettingsReqDto(
 )
 
 @Serializable
-data class GetCommonReqDto(
-    val filter: Set<ConfItem>? = null
-) {
-    enum class ConfItem {
-        DeltaTrack, CorsOrigin
-    }
-}
+data class AccountDeleteReqDto(
+    val accountId: KUUID
+)
+
+@Serializable
+data class ClientListReqDto(
+    val clientId: KUUID
+)
