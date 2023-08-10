@@ -20,6 +20,9 @@ import java.util.*
 @OptIn(ExperimentalSerializationApi::class)
 val JsonGlobal = Json {
     namingStrategy = JsonNamingStrategy.SnakeCase
+    encodeDefaults = true
+    explicitNulls = false
+    useArrayPolymorphism = true
 }
 
 fun jsonObjectOf(vararg contents: Pair<String, Any>): JsonObject {
