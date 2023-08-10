@@ -1,6 +1,7 @@
 package io.github.driveindex.controller
 
 import io.github.driveindex.client.ClientType
+import io.github.driveindex.core.util.KUUID
 import io.github.driveindex.core.util.SHA1
 import io.github.driveindex.database.dao.AccountsDao
 import io.github.driveindex.database.dao.ClientsDao
@@ -17,10 +18,7 @@ import io.github.driveindex.module.Current
 import io.github.driveindex.module.DeletionModule
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 /**
  * @author sgpublic
@@ -112,8 +110,8 @@ class UserConfController(
 
     @Operation(summary = "枚举 Client 下登录的账号")
     @GetMapping("/api/user/account")
-    fun listAccount(@RequestBody dto: ClientListReqDto): RespResult<List<AccountsDto<*>>> {
-        val client = clientsDao.getClient(dto.clientId)
+    fun listAccount(@RequestParam("client_id") clientId: KUUID): RespResult<List<AccountsDto<*>>> {
+        val client = clientsDao.getClient(clientId)
             ?: throw FailedResult.Client.NotFound
         val list: ArrayList<AccountsDto<*>> = ArrayList()
         for (entity in accountsDao.listByClient(client.id)) {
