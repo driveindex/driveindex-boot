@@ -1,11 +1,11 @@
 package io.github.driveindex.exception
 
 import io.github.driveindex.Application
+import io.github.driveindex.core.util.JsonGlobal
 import io.github.driveindex.core.util.KUUID
 import io.github.driveindex.core.util.jsonObjectOf
 import jakarta.servlet.http.HttpServletResponse
 import kotlinx.serialization.Serializable
-import io.github.driveindex.core.util.JsonGlobal
 import kotlinx.serialization.json.JsonObject
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -27,6 +27,8 @@ class FailedResult private constructor(
         fun MissingBody(name: String, type: String) =
             FailedResult(-4002, "参数缺失",
                 jsonObjectOf("name" to name, "type" to type))
+
+        val BadArgument get() = FailedResult(-4003, "参数格式错误")
         val AnonymousDenied get() = FailedResult(-4050, "请登陆后再试")
         val NotFound get() = FailedResult(-4040, "您请求的资源不存在")
 

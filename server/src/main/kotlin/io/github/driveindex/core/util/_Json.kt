@@ -1,5 +1,6 @@
 package io.github.driveindex.core.util
 
+import io.github.driveindex.exception.FailedResult
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -98,7 +99,11 @@ object UuidAdapter: KSerializer<UUID> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): UUID {
-        return UUID.fromString(decoder.decodeString())
+        return try {
+            UUID.fromString(decoder.decodeString())
+        } catch (e: Exception) {
+            throw FailedResult.BadArgument
+        }
     }
 
     override fun serialize(encoder: Encoder, value: UUID) {
