@@ -4,12 +4,6 @@ import io.github.driveindex.client.ClientAction
 import io.github.driveindex.client.ClientType
 import io.github.driveindex.core.ConfigManager
 import io.github.driveindex.core.util.*
-import io.github.driveindex.dto.feign.AzureGraphDtoV2_Me_Drive_Root_Delta
-import io.github.driveindex.dto.resp.RespResult
-import io.github.driveindex.dto.resp.SampleResult
-import io.github.driveindex.dto.resp.resp
-import io.github.driveindex.exception.FailedResult
-import io.github.driveindex.feigh.AzurePortalClient
 import io.github.driveindex.database.dao.AccountsDao
 import io.github.driveindex.database.dao.ClientsDao
 import io.github.driveindex.database.dao.FileDao
@@ -22,11 +16,16 @@ import io.github.driveindex.database.entity.FileEntity
 import io.github.driveindex.database.entity.onedrive.OneDriveAccountEntity
 import io.github.driveindex.database.entity.onedrive.OneDriveClientEntity
 import io.github.driveindex.database.entity.onedrive.OneDriveFileEntity
+import io.github.driveindex.dto.feign.AzureGraphDtoV2_Me_Drive_Root_Delta
+import io.github.driveindex.dto.resp.RespResult
+import io.github.driveindex.dto.resp.SampleResult
+import io.github.driveindex.dto.resp.resp
+import io.github.driveindex.exception.FailedResult
+import io.github.driveindex.feigh.AzurePortalClient
 import io.github.driveindex.module.Current
 import jakarta.transaction.Transactional
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import io.github.driveindex.core.util.JsonGlobal
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import org.aspectj.weaver.tools.cache.SimpleCacheFactory
@@ -72,8 +71,8 @@ class OneDriveAction(
 
     @PostMapping("/api/user/login/request/onedrive")
     override fun loginRequest(@RequestBody params: JsonObject): RespResult<Unit> {
-        val param = JsonGlobal.decodeFromJsonElement<AccountLoginOneDrive>(params)
-            .state.ORIGIN_BASE64
+        val dto = JsonGlobal.decodeFromJsonElement<AccountLoginOneDrive>(params)
+        val param = dto.state.ORIGIN_BASE64
             .split("&")
             .fold(mutableMapOf<String, String>()) { map, param ->
                 param.split("=").takeIf {
@@ -105,9 +104,7 @@ class OneDriveAction(
         } ?: throw FailedResult.Auth.IllegalRequest
 
         val token = client.endPoint.Portal.getToken(
-            client.tenantId,
-            param["code"] ?: throw FailedResult.Auth.IllegalRequest,
-            client.clientSecret
+            client.tenantId, dto.code, client.clientSecret
         )
 
         val me = client.endPoint.Graph.Me(token.tokenStr)
@@ -266,18 +263,15 @@ class OneDriveAction(
 
     @Serializable
     data class AccountLoginOneDrive(
+        val code: String,
         val state: String,
     )
 
     @Serializable
     data class ClientCreateOneDrive(
-        @SerialName("azure_client_id")
         val azureClientId: String,
-        @SerialName("azure_client_secret")
         val azureClientSecret: String,
-        @SerialName("end_point")
         val endPoint: OneDriveClientEntity.EndPoint = OneDriveClientEntity.EndPoint.Global,
-        @SerialName("tenant_id")
         val tenantId: String = "common",
     )
 
