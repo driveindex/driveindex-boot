@@ -31,6 +31,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import org.aspectj.weaver.tools.cache.SimpleCacheFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.web.bind.annotation.*
+import java.net.URLEncoder
 import java.util.*
 
 @RestController
@@ -62,7 +63,7 @@ class OneDriveAction(
             return ("${entity.endPoint.LoginHosts}/${entity.tenantId}/oauth2/v2.0/authorize?" +
                 "client_id=${entity.clientId}" +
                 "&response_type=code" +
-                "&redirect_uri=${redirectUri}" +
+                "&redirect_uri=${URLEncoder.encode(redirectUri, Charsets.UTF_8)}" +
                 "&response_mode=query" +
                 "&scope=${AzurePortalClient.Scope.joinToString("%20")}" +
                 "&state=${state.joinToString("&").TO_BASE64}").resp()
