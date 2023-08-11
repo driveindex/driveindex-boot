@@ -144,6 +144,9 @@ class UserConfController(
     @Operation(summary = "创建 Client")
     @PostMapping("/api/user/client")
     fun createClient(@RequestBody dto: ClientCreateReqDto): SampleResult {
+        if (dto.name.isBlank()) {
+            throw FailedResult.MissingBody("name", "String")
+        }
         dto.type.create(dto.name, dto.data)
         return SampleResult
     }

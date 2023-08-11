@@ -171,6 +171,16 @@ class OneDriveAction(
     override fun create(name: String, params: JsonObject) {
         val creation: ClientCreateOneDrive = JsonGlobal.decodeFromJsonElement(params)
 
+        if (creation.tenantId.isBlank()) {
+            throw FailedResult.MissingBody("tenant_id", "String")
+        }
+        if (creation.azureClientId.isBlank()) {
+            throw FailedResult.MissingBody("azure_client_id", "String")
+        }
+        if (creation.azureClientSecret.isBlank()) {
+            throw FailedResult.MissingBody("azure_client_secret", "String")
+        }
+
         val user = current.User.id
         clientDao.findByName(user, name)?.let {
             throw FailedResult.Client.DuplicateClientName
@@ -208,10 +218,14 @@ class OneDriveAction(
     override fun edit(params: JsonObject, clientId: UUID) {
         getClient(clientId)
         val edition: ClientEditOneDrive = JsonGlobal.decodeFromJsonElement(params)
+
         clientDao.getClient(clientId)?.also {
             edition.name?.let { name ->
                 if (it.name == name) {
                     return@also
+                }
+                if (name.isBlank()) {
+                    throw FailedResult.MissingBody("name", "String")
                 }
                 it.name = name
             }
@@ -221,6 +235,9 @@ class OneDriveAction(
             edition.clientSecret?.let { secret ->
                 if (it.clientSecret == secret) {
                     return@also
+                }
+                if (secret.isBlank()) {
+                    throw FailedResult.MissingBody("client_secret", "String")
                 }
                 it.clientSecret = secret
             }
