@@ -24,6 +24,7 @@ class ConfigManager {
         private const val SectionCommon = "common"
         val Port by IniVal.New(SectionCommon, "port", 8080)
         val Debug by IniVal.New(SectionCommon, "debug", false)
+        val Trace by IniVal.New(SectionCommon, "trace", false)
         val LogPath by IniVal.New(SectionCommon, "log-dir", "/var/log/driveindex")
 
         private const val SectionSql = "sql"

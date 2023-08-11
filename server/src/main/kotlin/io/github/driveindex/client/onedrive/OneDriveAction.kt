@@ -21,10 +21,10 @@ import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.SampleResult
 import io.github.driveindex.dto.resp.resp
 import io.github.driveindex.exception.FailedResult
-import io.github.driveindex.feigh.AzurePortalClient
+import io.github.driveindex.feigh.AzureAuthClient
+import io.github.driveindex.feigh.getToken
 import io.github.driveindex.module.Current
 import jakarta.transaction.Transactional
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -65,7 +65,7 @@ class OneDriveAction(
                 "&response_type=code" +
                 "&redirect_uri=${URLEncoder.encode(redirectUri, Charsets.UTF_8)}" +
                 "&response_mode=query" +
-                "&scope=${AzurePortalClient.Scope.joinToString("%20")}" +
+                "&scope=${AzureAuthClient.Scope.joinToString("%20")}" +
                 "&state=${state.joinToString("&").TO_BASE64}").resp()
         }
     }
@@ -85,9 +85,9 @@ class OneDriveAction(
             }
         val ts = param["ts"]?.toLongOrNull()
             ?: throw FailedResult.Auth.IllegalRequest
-        if (ts + 600L * 1000 < System.currentTimeMillis()) {
-            throw FailedResult.Auth.AuthTimeout
-        }
+//        if (ts + 600L * 1000 < System.currentTimeMillis()) {
+//            throw FailedResult.Auth.AuthTimeout
+//        }
 
         val clientId = try {
             UUID.fromString(param["id"])
@@ -121,7 +121,7 @@ class OneDriveAction(
         } ?: throw FailedResult.Auth.IllegalRequest
         val onedriveClient = onedriveClientDao.getClient(client.id)
 
-        val token = onedriveClient.endPoint.Portal.getToken(
+        val token = onedriveClient.endPoint.Auth.getToken(
             onedriveClient.tenantId, dto.code, onedriveClient.clientSecret
         )
 

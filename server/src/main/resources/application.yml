@@ -13,14 +13,6 @@ spring:
       ddl-auto: update
     open-in-view: false
     database-platform: org.hibernate.dialect.MariaDB103Dialect
-#    properties:
-#      hibernate:
-#        cache:
-#          use_second_level_cache: true
-#          region.factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
-#          jcache:
-#            provider: org.ehcache.jcache.JCacheCachingProvider
-#            uri: ehcache.xml
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
   flyway:

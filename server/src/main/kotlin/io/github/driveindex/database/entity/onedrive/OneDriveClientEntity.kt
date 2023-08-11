@@ -1,9 +1,8 @@
 package io.github.driveindex.database.entity.onedrive
 
-import feign.Feign
-import io.github.driveindex.Application
+import io.github.driveindex.configuration.lazyFeignClientOf
+import io.github.driveindex.feigh.AzureAuthClient
 import io.github.driveindex.feigh.AzureGraphClient
-import io.github.driveindex.feigh.AzurePortalClient
 import jakarta.persistence.*
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
@@ -32,8 +31,8 @@ data class OneDriveClientEntity(
 ) {
     enum class EndPoint(
         val LoginHosts: String,
-        private val portal: String,
-        private val graph: String,
+        portal: String,
+        graph: String,
     ) {
         Global(
             "https://login.microsoftonline.com",
@@ -56,15 +55,11 @@ data class OneDriveClientEntity(
             "https://microsoftgraph.chinacloudapi.cn",
         );
 
-        val Portal: AzurePortalClient by lazy {
-            Application.getBean<Feign.Builder>()
-                .target(AzurePortalClient::class.java, portal)
-        }
+        val Auth: AzureAuthClient by lazyFeignClientOf(LoginHosts)
 
-        val Graph: AzureGraphClient by lazy {
-            Application.getBean<Feign.Builder>()
-                .target(AzureGraphClient::class.java, graph)
-        }
+        val Portal: AzureAuthClient by lazyFeignClientOf(portal)
+
+        val Graph: AzureGraphClient by lazyFeignClientOf(graph)
 
         /**
          * @see <a href="https://learn.microsoft.com/zh-cn/graph/delta-query-overview#national-clouds">使用增量查询跟踪 Microsoft Graph 数据更改 - 国家云</a>

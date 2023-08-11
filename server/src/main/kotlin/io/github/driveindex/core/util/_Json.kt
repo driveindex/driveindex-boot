@@ -13,6 +13,7 @@ import kotlinx.serialization.json.*
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.converter.FormHttpMessageConverter
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.KotlinSerializationJsonHttpMessageConverter
 import java.util.*
@@ -48,6 +49,7 @@ class GsonConfig {
         val messageConverters: MutableCollection<HttpMessageConverter<*>> = ArrayList()
         val gsonHttpMessageConverter = KotlinSerializationJsonHttpMessageConverter(JsonGlobal)
         messageConverters.add(gsonHttpMessageConverter)
+        messageConverters.add(FormHttpMessageConverter())
         return HttpMessageConverters(true, messageConverters)
     }
 }

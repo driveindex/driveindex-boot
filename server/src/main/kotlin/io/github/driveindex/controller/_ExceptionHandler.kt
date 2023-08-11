@@ -28,13 +28,12 @@ class _ExceptionHandler {
         return e.resp()
     }
 
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
     @ExceptionHandler(AzureDecodeException::class)
     fun handleAzureDecodeException(
         exception: AzureDecodeException,
-        response: ServerHttpResponse
     ): FailedRespResult {
         log.warn("未捕获的 Azure 接口解析错误", exception)
-        response.statusCode = HttpStatus.valueOf(exception.status())
         return FailedResult.BadGateway.resp()
     }
 

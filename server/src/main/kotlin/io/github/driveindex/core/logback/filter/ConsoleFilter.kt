@@ -17,8 +17,8 @@ class ConsoleFilter : Filter<ILoggingEvent>() {
 
     init {
         val check = !ConfigManager.Debug
-        self = if (check) Level.INFO else Level.TRACE
-        out = if (check) Level.WARN else Level.INFO
+        self = if (check) Level.INFO else if (ConfigManager.Trace) Level.TRACE else Level.DEBUG
+        out = if (check) Level.WARN else if (ConfigManager.Trace) Level.DEBUG else Level.INFO
     }
 
     override fun decide(event: ILoggingEvent): FilterReply {
