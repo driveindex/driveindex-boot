@@ -246,11 +246,6 @@ class OneDriveAction(
     }
 
     @Transactional
-    override fun delete(clientId: UUID) {
-        onedriveClientDao.deleteById(clientId)
-    }
-
-    @Transactional
     override fun delta(accountId: UUID) {
         log.info("account delta track start! account id: $accountId")
         val endPoint = onedriveClientDao.getClient(
@@ -312,9 +307,7 @@ class OneDriveAction(
 
     @Serializable
     data class ClientEditOneDrive(
-        @SerialName("name")
         val name: String?,
-        @SerialName("client_secret")
         val clientSecret: String?,
     )
 }

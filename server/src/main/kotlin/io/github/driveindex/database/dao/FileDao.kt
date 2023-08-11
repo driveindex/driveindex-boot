@@ -16,6 +16,10 @@ import java.util.UUID
 @Repository
 interface FileDao: JpaRepository<FileEntity, UUID> {
     @Modifying
+    @Query("delete FileEntity where id=:id")
+    fun deleteByUUID(id: UUID)
+
+    @Modifying
     @Query("update FileEntity set name=:name where id=:id")
     fun rename(id: UUID, name: String)
 
