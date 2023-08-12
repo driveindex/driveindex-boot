@@ -58,6 +58,7 @@ class OneDriveAction(
                 "id" to clientId,
                 "ts" to System.currentTimeMillis(),
                 "type" to client.type,
+                "redirect_uri" to redirectUri,
             )
             state["sign"] = "${state.joinToSortedString("&")}${ConfigManager.TokenSecurityKey}".MD5_FULL
             return ("${entity.endPoint.LoginHosts}/${entity.tenantId}/oauth2/v2.0/authorize?" +
@@ -70,6 +71,7 @@ class OneDriveAction(
         }
     }
 
+    @Transactional
     @PostMapping("/api/user/login/request/onedrive")
     override fun loginRequest(@RequestBody params: JsonObject): RespResult<Unit> {
         val dto = JsonGlobal.decodeFromJsonElement<AccountLoginOneDrive>(params)
@@ -85,9 +87,9 @@ class OneDriveAction(
             }
         val ts = param["ts"]?.toLongOrNull()
             ?: throw FailedResult.Auth.IllegalRequest
-//        if (ts + 600L * 1000 < System.currentTimeMillis()) {
-//            throw FailedResult.Auth.AuthTimeout
-//        }
+        if (ts + 60L * 2 * 1000 < System.currentTimeMillis()) {
+            throw FailedResult.Auth.AuthTimeout
+        }
 
         val clientId = try {
             UUID.fromString(param["id"])
@@ -99,12 +101,15 @@ class OneDriveAction(
         } catch (e: Exception) {
             throw FailedResult.Auth.IllegalRequest
         }
+        val redirectUri = param["redirect_uri"]?.takeIf { it.isNotBlank() }
+            ?: throw FailedResult.Auth.IllegalRequest
         val originSign = param["sign"]
             ?: throw FailedResult.Auth.IllegalRequest
         val sign = "${linkedMapOf<String, Any>(
             "id" to clientId,
             "ts" to ts,
             "type" to type,
+            "redirect_uri" to redirectUri,
         ).joinToSortedString("&")}${
             ConfigManager.TokenSecurityKey
         }".MD5_FULL
@@ -122,7 +127,11 @@ class OneDriveAction(
         val onedriveClient = onedriveClientDao.getClient(client.id)
 
         val token = onedriveClient.endPoint.Auth.getToken(
-            onedriveClient.tenantId, dto.code, onedriveClient.clientSecret
+            onedriveClient.tenantId,
+            dto.code,
+            onedriveClient.clientId,
+            onedriveClient.clientSecret,
+            redirectUri
         )
 
         val me = onedriveClient.endPoint.Graph.Me(token.tokenStr)

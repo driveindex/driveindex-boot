@@ -9,6 +9,8 @@ import feign.codec.DecodeException
  */
 
 class AzureDecodeException(
-    status: Int, val code: String,
-    message: String, request: Request
+    status: Int,
+    val code: String,
+    override val message: String,
+    request: Request,
 ) : DecodeException(status, message, request)

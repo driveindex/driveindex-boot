@@ -38,6 +38,9 @@ class FailedResult private constructor(
         val NotImplementationError get() = FailedResult(-5004, "别买炒饭了，头发快掉光了(´╥ω╥`)")
 
         val BadGateway get() = FailedResult(-5020, "上游服务器响应错误，请查阅日志")
+        fun BadGateway(message: String) =
+            FailedResult(-5020, "上游服务器响应错误，请查阅日志",
+                jsonObjectOf("message" to message))
     }
 
     fun resp(): FailedRespResult {

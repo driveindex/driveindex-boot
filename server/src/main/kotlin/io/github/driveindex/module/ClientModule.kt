@@ -17,14 +17,21 @@ class ClientModule(
 
     @PostConstruct
     private fun onSetup() {
-        executor.execute(this::realSetup)
+        executor.execute {
+            Thread.sleep(30_000)
+            realSetup()
+        }
     }
 
     private fun realSetup() {
         log.trace("delta track start!")
         for (client in client.listIfSupportDelta()) {
             for (accountId in account.selectIdByClient(client.id)) {
-                client.type.delta(accountId)
+                try {
+                    client.type.delta(accountId)
+                } catch (e: Exception) {
+                    log.error("delta track for account $accountId failed", e)
+                }
             }
         }
         log.trace("delta track finish! sleep 5 min...")

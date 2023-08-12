@@ -9,16 +9,19 @@ import feign.slf4j.Slf4jLogger
 import io.github.driveindex.Application
 import io.github.driveindex.core.ConfigManager
 import io.github.driveindex.feigh.AzureErrorDecoder
+import kotlinx.serialization.json.Json
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters
 import org.springframework.cloud.openfeign.FeignClientsConfiguration
+import org.springframework.cloud.openfeign.support.SpringDecoder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
+import org.springframework.http.converter.json.KotlinSerializationJsonHttpMessageConverter
 
 @Import(FeignClientsConfiguration::class, AzureErrorDecoder::class)
 @Configuration
 class FeignClientConfig(
     private val encoder: Encoder,
-//    private val converters: ObjectFactory<HttpMessageConverters>,
     private val decoder: Decoder,
     private val contract: Contract,
     private val errorDecoder: AzureErrorDecoder,
@@ -27,8 +30,14 @@ class FeignClientConfig(
     fun feignBuilder(): Feign.Builder {
         return Feign.builder()
             .encoder(encoder)
-//            .encoder(SpringFormEncoder(SpringEncoder(converters)))
-            .decoder(decoder)
+            .decoder(SpringDecoder {
+                HttpMessageConverters(true, listOf(
+                    KotlinSerializationJsonHttpMessageConverter(Json {
+                        ignoreUnknownKeys = true
+                        useAlternativeNames = true
+                    })
+                ))
+            })
             .contract(contract)
             .errorDecoder(errorDecoder)
             .logLevel(feignLoggerLevel())

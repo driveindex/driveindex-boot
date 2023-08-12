@@ -22,13 +22,13 @@ data class OneDriveAccountEntity(
     @Column(name = "token_type")
     var tokenType: String,
 
-    @Column(name = "access_token")
+    @Column(name = "access_token", length = 2048)
     var accessToken: String,
 
     @Column(name = "token_expire")
     var tokenExpire: Long,
 
-    @Column(name = "refresh_token")
+    @Column(name = "refresh_token", length = 1024)
     var refreshToken: String,
 
     @Column(name = "expired")

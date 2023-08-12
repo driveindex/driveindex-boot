@@ -6,7 +6,6 @@ import io.github.driveindex.exception.FailedRespResult
 import io.github.driveindex.exception.FailedResult
 import org.springframework.http.HttpStatus
 import org.springframework.http.converter.HttpMessageNotReadableException
-import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -34,7 +33,7 @@ class _ExceptionHandler {
         exception: AzureDecodeException,
     ): FailedRespResult {
         log.warn("未捕获的 Azure 接口解析错误", exception)
-        return FailedResult.BadGateway.resp()
+        return FailedResult.BadGateway(exception.message).resp()
     }
 
     @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
