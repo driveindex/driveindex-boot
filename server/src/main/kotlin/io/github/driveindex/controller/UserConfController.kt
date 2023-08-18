@@ -123,7 +123,7 @@ class UserConfController(
                 modifyAt = entity.modifyAt,
                 detail = when (client.type) {
                     ClientType.OneDrive ->
-                        onedriveAccountDao.getAccount(entity.id).let {
+                        onedriveAccountDao.getOneDriveAccount(entity.id).let {
                             return@let OneDriveAccountDetail(
                                 azureUserId = it.azureUserId,
                             )

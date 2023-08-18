@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 import java.util.regex.Pattern
 
 @Serializable
-data class AzureFailedResultDto(
+data class AzureFailedResultDtoA(
     @SerialName("error")
     val error: String,
     @SerialName("errorDescription")
@@ -18,6 +18,14 @@ data class AzureFailedResultDto(
     val traceId: String,
     @SerialName("correlationId")
     val correlationId: String,
+)
+
+@Serializable
+data class AzureFailedResultDtoB(
+    @SerialName("code")
+    val code: String,
+    @SerialName("message")
+    val message: String,
 )
 
 @Serializable
@@ -34,8 +42,6 @@ data class AzurePortalDtoV1_Token(
     val refreshToken: String,
 ) {
     val expires: Long get() = System.currentTimeMillis() + expiresIn * 1000
-
-    val tokenStr: String get() = "$tokenType $accessToken"
 }
 
 @Serializable
@@ -51,9 +57,9 @@ data class AzureGraphDtoV2_Me(
 @Serializable
 data class AzureGraphDtoV2_Me_Drive_Root_Delta(
     @SerialName("@odata.nextLink")
-    private val nextLink: String?,
+    private val nextLink: String? = null,
     @SerialName("@odata.deltaLink")
-    private val deltaLink: String?,
+    private val deltaLink: String? = null,
     @SerialName("value")
     val value: List<Value>
 ) {
@@ -63,7 +69,8 @@ data class AzureGraphDtoV2_Me_Drive_Root_Delta(
     companion object {
         private val TokenPattern: Pattern = "token=(.*?)".toPattern()
     }
-    private fun String.getToken() = TokenPattern.matcher(this).group().substring(6)
+    private fun String.getToken() = TokenPattern.matcher(this)
+        .also { it.find() }.group().substring(6)
 
     @Serializable
     data class Value(
@@ -71,16 +78,16 @@ data class AzureGraphDtoV2_Me_Drive_Root_Delta(
         val id: String,
         @SerialName("name")
         val name: String,
-        @SerialName("size:")
+        @SerialName("size")
         val size: Long,
         @SerialName("webUrl")
         val webUrl: String,
         @SerialName("parentReference")
         val parentReference: ParentReference,
         @SerialName("folder")
-        val folder: Unit?,
+        val folder: Unit? = null,
         @SerialName("file")
-        val file: File?,
+        val file: File? = null,
     ) {
         @Serializable
         data class ParentReference(
@@ -92,16 +99,16 @@ data class AzureGraphDtoV2_Me_Drive_Root_Delta(
             @SerialName("mimeType")
             val mimeType: String,
             @SerialName("hashes")
-            val hashes: Hashes
+            val hashes: Hashes? = null
         ) {
             @Serializable
             data class Hashes(
                 @SerialName("quickXorHash")
                 val quickXorHash: String,
                 @SerialName("sha1Hash")
-                val sha1Hash: String?,
+                val sha1Hash: String? = null,
                 @SerialName("sha256Hash")
-                val sha256Hash: String?,
+                val sha256Hash: String? = null,
             )
         }
     }

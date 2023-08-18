@@ -1,11 +1,10 @@
-package io.github.driveindex.feigh
+package io.github.driveindex.feigh.onedrive
 
 import feign.form.FormProperty
-import io.github.driveindex.dto.feign.AzureGraphDtoV2_Me
-import io.github.driveindex.dto.feign.AzureGraphDtoV2_Me_Drive_Root_Delta
 import io.github.driveindex.dto.feign.AzurePortalDtoV1_Token
 import org.springframework.http.MediaType
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 
 
 /**
@@ -54,7 +53,7 @@ interface AzureAuthClient {
         @FormProperty("refresh_token")
         var refreshToken: String,
         @FormProperty("grant_type")
-        val grantType: String = "refresh_token",
+        var grantType: String = "refresh_token",
     )
 
     companion object {
@@ -85,15 +84,4 @@ fun AzureAuthClient.refreshToken(
     refreshToken: String,
 ): AzurePortalDtoV1_Token {
     return refreshToken(tenant, AzureAuthClient.TokenRefreshDto(clientId, clientSecret, refreshToken))
-}
-
-interface AzureGraphClient {
-    @GetMapping("/v1.0/me")
-    fun Me(@RequestHeader("Authorization") token: String): AzureGraphDtoV2_Me
-
-    @GetMapping("/v1.0/me/drive/root/delta")
-    fun Me_Drive_Root_Delta(
-        @RequestHeader("Authorization") token: String,
-        @RequestParam("token") deltaToken: String,
-    ): AzureGraphDtoV2_Me_Drive_Root_Delta
 }

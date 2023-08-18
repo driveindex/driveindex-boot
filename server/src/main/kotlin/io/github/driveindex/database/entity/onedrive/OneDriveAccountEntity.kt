@@ -31,9 +31,6 @@ data class OneDriveAccountEntity(
     @Column(name = "refresh_token", length = 1024)
     var refreshToken: String,
 
-    @Column(name = "expired")
-    var accountExpired: Boolean = false,
-
     @Column(name = "delta_token")
     var deltaToken: String? = null,
 )

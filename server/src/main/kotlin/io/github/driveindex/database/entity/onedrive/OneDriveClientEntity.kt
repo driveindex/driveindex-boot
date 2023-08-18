@@ -1,8 +1,8 @@
 package io.github.driveindex.database.entity.onedrive
 
 import io.github.driveindex.configuration.lazyFeignClientOf
-import io.github.driveindex.feigh.AzureAuthClient
-import io.github.driveindex.feigh.AzureGraphClient
+import io.github.driveindex.feigh.onedrive.AzureAuthClient
+import io.github.driveindex.feigh.onedrive.AzureGraphClient
 import jakarta.persistence.*
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes

@@ -23,8 +23,17 @@ data class AccountsEntity(
     @Column(name = "display_name")
     var displayName: String,
 
+    @Column(name = "delta_tick")
+    var deltaTick: Int = 5 * 60 * 1000,
+
+    @Column(name = "last_success_delta")
+    var lastSuccessDelta: Long = 0,
+
     @Column(name = "user_principal_name")
     val userPrincipalName: String,
+
+    @Column(name = "expired")
+    var accountExpired: Boolean = false,
 
     @Column(name = "create_at")
     val createAt: Long = System.currentTimeMillis(),

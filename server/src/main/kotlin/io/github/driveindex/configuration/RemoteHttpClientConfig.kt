@@ -3,12 +3,11 @@ package io.github.driveindex.configuration
 import feign.Contract
 import feign.Feign
 import feign.Logger
-import feign.codec.Decoder
 import feign.codec.Encoder
 import feign.slf4j.Slf4jLogger
 import io.github.driveindex.Application
 import io.github.driveindex.core.ConfigManager
-import io.github.driveindex.feigh.AzureErrorDecoder
+import io.github.driveindex.feigh.onedrive.AzureErrorDecoder
 import kotlinx.serialization.json.Json
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters
 import org.springframework.cloud.openfeign.FeignClientsConfiguration
@@ -22,7 +21,7 @@ import org.springframework.http.converter.json.KotlinSerializationJsonHttpMessag
 @Configuration
 class FeignClientConfig(
     private val encoder: Encoder,
-    private val decoder: Decoder,
+//    private val decoder: Decoder,
     private val contract: Contract,
     private val errorDecoder: AzureErrorDecoder,
 ) {
@@ -52,10 +51,15 @@ class FeignClientConfig(
     }
 }
 
-inline fun <reified T> lazyFeignClientOf(url: String, clazz: Class<T> = T::class.java): Lazy<T> {
+inline fun <reified T> lazyFeignClientOf(
+    url: String,
+    clazz: Class<T> = T::class.java,
+    crossinline block: Feign.Builder.() -> Unit = { }
+): Lazy<T> {
     return lazy {
         Application.getBean<Feign.Builder>()
             .logger(Slf4jLogger(clazz))
+            .apply(block)
             .target(clazz, url)
     }
 }

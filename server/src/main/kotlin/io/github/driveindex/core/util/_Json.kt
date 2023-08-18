@@ -21,7 +21,7 @@ val JsonGlobal = Json {
     namingStrategy = JsonNamingStrategy.SnakeCase
     encodeDefaults = true
     explicitNulls = false
-    useAlternativeNames = false
+    useAlternativeNames = true
     ignoreUnknownKeys = true
 }
 

@@ -21,8 +21,9 @@ import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.dto.resp.SampleResult
 import io.github.driveindex.dto.resp.resp
 import io.github.driveindex.exception.FailedResult
-import io.github.driveindex.feigh.AzureAuthClient
-import io.github.driveindex.feigh.getToken
+import io.github.driveindex.feigh.onedrive.AzureAuthClient
+import io.github.driveindex.feigh.onedrive.getToken
+import io.github.driveindex.feigh.onedrive.withCheckedToken
 import io.github.driveindex.module.Current
 import jakarta.transaction.Transactional
 import kotlinx.serialization.Serializable
@@ -134,7 +135,7 @@ class OneDriveAction(
             redirectUri
         )
 
-        val me = onedriveClient.endPoint.Graph.Me(token.tokenStr)
+        val me = onedriveClient.endPoint.Graph.Me("${token.tokenType} ${token.accessToken}")
 
         // 允许账号失效后重新登录
         onedriveAccountDao.findByAzureId(
@@ -144,8 +145,12 @@ class OneDriveAction(
             accessToken = token.accessToken
             refreshToken = token.refreshToken
             tokenExpire = token.expires
-            accountExpired = false
             onedriveAccountDao.save(this)
+
+            accountDao.getAccount(id).let {
+                it.accountExpired = false
+                accountDao.save(it)
+            }
 
             return SampleResult
         }
@@ -254,28 +259,44 @@ class OneDriveAction(
         }
     }
 
+    override fun needDelta(accountId: UUID): Boolean {
+        val account = accountDao.getAccount(accountId)
+        if (System.currentTimeMillis() + account.deltaTick < account.lastSuccessDelta) {
+            return false
+        }
+        return !account.accountExpired
+    }
+
     @Transactional
     override fun delta(accountId: UUID) {
         log.info("account delta track start! account id: $accountId")
-        val endPoint = onedriveClientDao.getClient(
-            accountDao.getAccount(accountId).parentClientId
-        ).endPoint
-        var delta: AzureGraphDtoV2_Me_Drive_Root_Delta
-        val token: String
-        val account = onedriveAccountDao.getAccount(accountId).also {
-            token = it.accessToken
-            delta = AzureGraphDtoV2_Me_Drive_Root_Delta(
-                "token=${it.deltaToken ?: ""}", null, listOf()
-            )
-        }
+        val account = accountDao.getAccount(accountId)
+        val client = onedriveClientDao.getClient(account.parentClientId)
+        val endPoint = client.endPoint
+
+        val oneDriveAccount = onedriveAccountDao.getOneDriveAccount(accountId)
+        var delta = AzureGraphDtoV2_Me_Drive_Root_Delta(
+            "token=${oneDriveAccount.deltaToken ?: ""}", null, listOf()
+        )
         do {
-            delta = endPoint.Graph.Me_Drive_Root_Delta(token, delta.nextToken)
+            delta = endPoint.Graph.withCheckedToken(
+                onedriveAccountDao, oneDriveAccount, client
+            ) { token ->
+                if (delta.nextToken.isBlank()) {
+                    Me_Drive_Root_Delta(token)
+                } else {
+                    Me_Drive_Root_Delta(token, delta.nextToken)
+                }
+            }
             for (item in delta.value) {
+                if (item.file != null && item.file.hashes == null) {
+                    continue
+                }
                 val parent = onedriveFileDao.findByParentReference(
                     item.parentReference.id
                 )
                 fileDao.save(FileEntity(
-                    accountId = account.id,
+                    accountId = oneDriveAccount.id,
                     name = item.name,
                     parentId = parent?.id,
                     isDir = item.folder != null,
@@ -286,7 +307,7 @@ class OneDriveAction(
                     clientType = type
                 ))
                 onedriveFileDao.save(OneDriveFileEntity(
-                    accountId = account.id,
+                    accountId = oneDriveAccount.id,
                     fileId = item.id,
                     webUrl = item.webUrl,
                     mimeType = item.file?.mimeType ?: "directory",
@@ -296,7 +317,10 @@ class OneDriveAction(
                 ))
             }
         } while (delta.deltaToken == null)
-        account.deltaToken = delta.deltaToken
+        oneDriveAccount.deltaToken = delta.deltaToken
+        onedriveAccountDao.save(oneDriveAccount)
+        account.lastSuccessDelta = System.currentTimeMillis()
+        accountDao.save(account)
         log.info("account delta track finished! account id: $accountId")
     }
 
