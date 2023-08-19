@@ -25,7 +25,7 @@ val JsonGlobal = Json {
     ignoreUnknownKeys = true
 }
 
-fun jsonObjectOf(vararg contents: Pair<String, Any>): JsonObject {
+fun jsonObjectOf(vararg contents: Pair<String, Any?>): JsonObject {
     return buildJsonObject {
         for ((key, value) in contents) {
             put(key, when (value) {

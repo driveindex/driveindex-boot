@@ -1,5 +1,6 @@
 package io.github.driveindex.core.util
 
+import io.github.driveindex.core.ConfigManager
 import kotlinx.serialization.encodeToString
 import java.nio.charset.Charset
 import java.security.MessageDigest
@@ -79,7 +80,7 @@ val Any.MD5_FULL_UPPER: String get() {
 }
 
 fun String.toJwtTag(time: Long): String {
-    return "$this,${time / 1000 * 1000}".MD5_FULL
+    return "$this,${ConfigManager.TokenSecurityKey},${time / 1000 * 1000}".MD5_FULL
 }
 
 private val sha1: MessageDigest get() = MessageDigest.getInstance("SHA1")

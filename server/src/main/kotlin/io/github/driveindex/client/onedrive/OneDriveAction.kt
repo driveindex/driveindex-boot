@@ -261,7 +261,7 @@ class OneDriveAction(
 
     override fun needDelta(accountId: UUID): Boolean {
         val account = accountDao.getAccount(accountId)
-        if (System.currentTimeMillis() + account.deltaTick < account.lastSuccessDelta) {
+        if (System.currentTimeMillis() < account.lastSuccessDelta + account.deltaTick) {
             return false
         }
         return !account.accountExpired
@@ -269,22 +269,26 @@ class OneDriveAction(
 
     @Transactional
     override fun delta(accountId: UUID) {
-        log.info("account delta track start! account id: $accountId")
+        log.info("delta track 开始！account id：$accountId")
         val account = accountDao.getAccount(accountId)
         val client = onedriveClientDao.getClient(account.parentClientId)
         val endPoint = client.endPoint
 
         val oneDriveAccount = onedriveAccountDao.getOneDriveAccount(accountId)
         var delta = AzureGraphDtoV2_Me_Drive_Root_Delta(
-            "token=${oneDriveAccount.deltaToken ?: ""}", null, listOf()
+            "token=${oneDriveAccount.deltaToken}".takeIf {
+                oneDriveAccount.deltaToken != null
+            }, null, listOf()
         )
         do {
             delta = endPoint.Graph.withCheckedToken(
                 onedriveAccountDao, oneDriveAccount, client
             ) { token ->
                 if (delta.nextToken.isBlank()) {
+                    log.debug("新的 delta")
                     Me_Drive_Root_Delta(token)
                 } else {
+                    log.debug("下一个 delta：${delta.nextToken}")
                     Me_Drive_Root_Delta(token, delta.nextToken)
                 }
             }
@@ -292,10 +296,35 @@ class OneDriveAction(
                 if (item.file != null && item.file.hashes == null) {
                     continue
                 }
-                val parent = onedriveFileDao.findByParentReference(
-                    item.parentReference.id
+                val duplicateCheck = onedriveFileDao.findByAzureFileId(item.id, account.id)
+                if (duplicateCheck != null) {
+                    if (item.deleted != null) {
+                        log.info("delta 删除文件：${duplicateCheck}")
+                        fileDao.deleteByUUID(duplicateCheck.id)
+                        onedriveFileDao.deleteByUUID(duplicateCheck.id)
+                    } else {
+                        log.warn("文件重复！id：${item.id}")
+                        if (ConfigManager.Debug) {
+                            log.debug("新的文件：{}", item)
+                            log.debug("旧的文件：{}", jsonObjectOf(
+                                "fileItem" to fileDao.findByUUID(duplicateCheck.id).toString(),
+                                "oneDriveFileItem" to duplicateCheck.toString(),
+                            ))
+                        }
+                    }
+                    continue
+                }
+                val parent = onedriveFileDao.findByAzureFileId(
+                    item.parentReference.id, account.id
                 )
+                val newId = UUID.randomUUID()
+                if (item.folder != null) {
+                    log.info("delta 新增文件夹：${item}")
+                } else {
+                    log.info("delta 新增文件：${item}")
+                }
                 fileDao.save(FileEntity(
+                    id = newId,
                     accountId = oneDriveAccount.id,
                     name = item.name,
                     parentId = parent?.id,
@@ -307,6 +336,7 @@ class OneDriveAction(
                     clientType = type
                 ))
                 onedriveFileDao.save(OneDriveFileEntity(
+                    id = newId,
                     accountId = oneDriveAccount.id,
                     fileId = item.id,
                     webUrl = item.webUrl,
@@ -321,7 +351,7 @@ class OneDriveAction(
         onedriveAccountDao.save(oneDriveAccount)
         account.lastSuccessDelta = System.currentTimeMillis()
         accountDao.save(account)
-        log.info("account delta track finished! account id: $accountId")
+        log.info("delta track 结束！account id：$accountId")
     }
 
     @Serializable

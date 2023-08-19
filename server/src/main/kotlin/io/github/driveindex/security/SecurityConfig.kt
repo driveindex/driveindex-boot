@@ -43,7 +43,7 @@ class SecurityConfig(
         http.addFilterBefore(password, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterAfter(jwt, IUsernamePasswordAuthenticationFilter::class.java)
         http.authorizeHttpRequests()
-            .requestMatchers("/token_state").authenticated()
+            .requestMatchers("/api/token_state").authenticated()
             .requestMatchers("/api/admin/**").hasRole(UserRole.ADMIN.name)
             .requestMatchers("/api/user/**").hasRole(UserRole.USER.name)
             .anyRequest().permitAll()

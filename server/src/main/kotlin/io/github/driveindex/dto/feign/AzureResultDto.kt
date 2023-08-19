@@ -67,7 +67,7 @@ data class AzureGraphDtoV2_Me_Drive_Root_Delta(
     val deltaToken: String? get() = deltaLink?.getToken()
 
     companion object {
-        private val TokenPattern: Pattern = "token=(.*?)".toPattern()
+        private val TokenPattern: Pattern = "token=(.*)".toPattern()
     }
     private fun String.getToken() = TokenPattern.matcher(this)
         .also { it.find() }.group().substring(6)
@@ -88,6 +88,8 @@ data class AzureGraphDtoV2_Me_Drive_Root_Delta(
         val folder: Unit? = null,
         @SerialName("file")
         val file: File? = null,
+        @SerialName("deleted")
+        val deleted: Unit? = null,
     ) {
         @Serializable
         data class ParentReference(

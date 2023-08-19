@@ -4,9 +4,9 @@ import io.github.driveindex.Application
 import io.github.driveindex.core.ConfigManager
 import io.github.driveindex.core.util.log
 import io.github.driveindex.core.util.toJwtTag
+import io.github.driveindex.database.dao.UserDao
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.exception.write
-import io.github.driveindex.database.dao.UserDao
 import io.github.driveindex.security.SecurityConfig
 import io.github.driveindex.security.UserPasswordToken
 import io.jsonwebtoken.Claims
@@ -44,8 +44,9 @@ class JwtTokenAuthenticationFilter(
 
         request.requestURI.let {
             if (it.startsWith("/api/login") ||
-                (!it.startsWith("/api/admin") &&
-                !it.startsWith("/api/user"))) {
+                !(it.startsWith("/api/admin") ||
+                        it.startsWith("/api/user") ||
+                        it.startsWith("/api/check_token"))) {
                 chain.doFilter(request, response)
                 return
             }

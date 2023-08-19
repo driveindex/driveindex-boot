@@ -2,13 +2,14 @@ package io.github.driveindex.security
 
 import io.github.driveindex.Application
 import io.github.driveindex.core.ConfigManager
+import io.github.driveindex.core.util.asDate
 import io.github.driveindex.core.util.toJwtTag
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import java.security.Key
-import java.util.Date
+import java.util.*
 
 class UserPasswordToken(
     username: String, password: String, auths: Collection<GrantedAuthority>? = null
@@ -47,7 +48,7 @@ class UserPasswordToken(
             claims[SecurityConfig.JWT_TAG] = details.tag
             return Jwts.builder()
                 .setClaims(claims)
-                .setIssuedAt(details.getDate())
+                .setIssuedAt(details.now.asDate)
                 .setExpiration(Date(details.now + ConfigManager.TokenExpired * 1000))
                 .signWith(secretKey)
                 .compact()
@@ -57,9 +58,7 @@ class UserPasswordToken(
     data class Details(
         val now: Long,
         val tag: String
-    ) {
-        fun getDate() = Date(now)
-    }
+    )
 
     companion object {
         @JvmStatic

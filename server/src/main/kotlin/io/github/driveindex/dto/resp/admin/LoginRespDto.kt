@@ -21,7 +21,7 @@ data class LoginRespDto(
 ) {
     @Serializable
     data class Auth (
-        @field:Schema(description = "用户凭证", example = "a5c2bca1aaz3...")
+        @field:Schema(example = "a5c2bca1aaz3...")
         val token: String,
 
         @field:Schema(description = "用户角色", example = "ADMIN")

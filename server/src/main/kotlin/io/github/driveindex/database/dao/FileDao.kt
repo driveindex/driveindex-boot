@@ -1,13 +1,13 @@
 package io.github.driveindex.database.dao
 
 import io.github.driveindex.core.util.CanonicalPath
-import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.database.entity.FileEntity
+import io.github.driveindex.exception.FailedResult
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
-import java.util.UUID
+import java.util.*
 
 /**
  * @author sgpublic
@@ -28,6 +28,9 @@ interface FileDao: JpaRepository<FileEntity, UUID> {
 
     @Query("from FileEntity where path=:path and accountId=:account")
     fun findLinkedByPath(path: CanonicalPath, account: UUID): FileEntity?
+
+    @Query("from FileEntity where id=:parent")
+    fun findByUUID(parent: UUID): FileEntity?
 
     @Query("from FileEntity where parentId=:parent")
     fun findByParent(parent: UUID): List<FileEntity>
