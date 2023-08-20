@@ -2,9 +2,10 @@ package io.github.driveindex.controller
 
 import io.github.driveindex.client.ClientType
 import io.github.driveindex.core.util.CanonicalPath
+import io.github.driveindex.database.dao.AccountsDao
 import io.github.driveindex.database.dao.FileDao
-import io.github.driveindex.database.dao.findTopUserFile
-import io.github.driveindex.database.dao.getLocalUserFile
+import io.github.driveindex.database.dao.getTopUserFile
+import io.github.driveindex.database.dao.getUserFile
 import io.github.driveindex.database.dao.onedrive.OneDriveFileDao
 import io.github.driveindex.database.entity.FileEntity
 import io.github.driveindex.dto.req.user.*
@@ -17,8 +18,8 @@ import io.github.driveindex.module.Current
 import io.github.driveindex.module.DeletionModule
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.web.bind.annotation.*
+import java.util.*
 
 /**
  * @author sgpublic
@@ -30,13 +31,14 @@ class UserDirController(
     private val fileDao: FileDao,
     private val current: Current,
 
-    private val onedriveFileDao: OneDriveFileDao,
+    private val accountsDao: AccountsDao,
+    private val oneDriveFileDao: OneDriveFileDao,
 
     private val deletionModule: DeletionModule,
 ) {
     @PostMapping("/api/user/file/dir")
     fun createDir(@RequestBody dto: CreateDirReqDto): SampleResult {
-        val dir = fileDao.getLocalUserFile(dto.parent, current.User.id)
+        val dir = fileDao.getUserFile(dto.parent, current.User.id)
 
         val mkdir = dto.parent.append(dto.name)
         fileDao.save(FileEntity(
@@ -56,9 +58,9 @@ class UserDirController(
 
     @PostMapping("/api/user/file/link")
     fun createLink(@RequestBody dto: CreateLinkReqDto): SampleResult {
-        val target = fileDao.findByIdOrNull(dto.target)
+        val target = fileDao.findByUUID(dto.target)
             ?: throw FailedResult.Dir.TargetNotFound
-        val dir = fileDao.getLocalUserFile(dto.parent, current.User.id)
+        val dir = fileDao.getUserFile(dto.parent, current.User.id)
 
         val name = dto.name ?: target.name
         val newLink = dir.path.append(name)
@@ -78,55 +80,6 @@ class UserDirController(
         return SampleResult
     }
 
-    @GetMapping("/api/user/file")
-    fun getFile(
-        @Schema(description = "目标文件 ID")
-        @RequestParam(name = "path")
-        path: CanonicalPath,
-    ): RespResult<FileListRespDto.Item<*>> {
-        val findVirtualByPath = fileDao.findVirtualByPath(path.pathSha256, current.User.id)
-        val findById: FileEntity = if (findVirtualByPath != null) {
-            val linkTarget = fileDao.findByIdOrNull(findVirtualByPath.linkTarget)
-                ?: throw FailedResult.Dir.TargetNotFound
-            if (linkTarget.isDir) {
-                throw FailedResult.Dir.NotAFile
-            }
-            // ^ findById
-            linkTarget
-        } else {
-            val top = fileDao.findTopUserFile(path, current.User.id)
-            val linkTarget = fileDao.findByIdOrNull(top.linkTarget)
-                ?: throw FailedResult.Dir.TargetNotFound
-            if (!linkTarget.isDir) {
-                throw FailedResult.Dir.NotADir
-            }
-            val targetPath = linkTarget.path.append(path.subPath(top.path.length))
-            // ^ findById
-            fileDao.findLinkedByPath(targetPath.pathSha256, linkTarget.accountId!!)
-                ?: throw FailedResult.Dir.TargetNotFound
-        }
-        return FileListRespDto.Item(
-            name = findById.name,
-            createAt = findById.createAt,
-            modifyAt = findById.modifyAt,
-            isDir = findById.isDir,
-            isLink = findById.linkTarget != null,
-            type = findById.clientType,
-            detail = when (findById.clientType!!) {
-                ClientType.OneDrive ->
-                    onedriveFileDao.getReferenceById(findById.id).let onedrive@{ byId ->
-                        return@onedrive FileListRespDto.Item.OneDrive(
-                            webUrl = byId.webUrl,
-                            mimeType = byId.mimeType,
-                            quickXorHash = byId.quickXorHash,
-                            sha1Hash = byId.sha1Hash,
-                            sha256Hash = byId.sha256Hash,
-                        )
-                    }
-            }
-        ).resp()
-    }
-
     @GetMapping("/api/user/file/list")
     fun getDir(
         @Schema(description = "目标文件 ID")
@@ -144,33 +97,48 @@ class UserDirController(
         @Schema(description = "页索引", defaultValue = "0")
         @RequestParam(name = "page_index", required = false)
         pageIndex: Int,
+        @Schema(description = "所属账号")
+        @RequestParam(name = "account_id", required = false)
+        accountId: UUID?,
     ): RespResult<FileListRespDto> {
-        val findVirtualByPath = fileDao.findVirtualByPath(path.pathSha256, current.User.id)
-        val findByParent: List<FileEntity> = if (findVirtualByPath != null) {
-            if (findVirtualByPath.linkTarget != null) {
-                val linkTarget = fileDao.findByIdOrNull(findVirtualByPath.linkTarget)
+        val findByParent: List<FileEntity> = if (accountId == null) {
+            val findUserFileByPath = fileDao.findFileByPathIntern(path.pathSha256, current.User.id, false)
+            if (findUserFileByPath != null) {
+                if (findUserFileByPath.linkTarget != null) {
+                    val linkTarget = fileDao.findByUUID(findUserFileByPath.linkTarget)
+                        ?: throw FailedResult.Dir.TargetNotFound
+                    if (!linkTarget.isDir) {
+                        throw FailedResult.Dir.NotADir
+                    }
+                    // ^ findByParent
+                    fileDao.findByParent(findUserFileByPath.linkTarget)
+                } else {
+                    // ^ findByParent
+                    fileDao.findByParent(findUserFileByPath.id)
+                }
+            } else {
+                val top = fileDao.getTopUserFile(path, current.User.id)
+                val linkTarget = fileDao.findByUUID(top.linkTarget!!)
                     ?: throw FailedResult.Dir.TargetNotFound
                 if (!linkTarget.isDir) {
                     throw FailedResult.Dir.NotADir
                 }
+                val targetPath = linkTarget.path.append(path.subPath(top.path.length))
+                val inlinkTarget = fileDao.findRemoteFileByPath(targetPath.pathSha256, linkTarget.accountId!!)
+                    ?: throw FailedResult.Dir.TargetNotFound
                 // ^ findByParent
-                fileDao.findByParent(findVirtualByPath.linkTarget)
-            } else {
-                // ^ findByParent
-                fileDao.findByParent(findVirtualByPath.id)
+                fileDao.findByParent(inlinkTarget.id)
             }
         } else {
-            val top = fileDao.findTopUserFile(path, current.User.id)
-            val linkTarget = fileDao.findByIdOrNull(top.linkTarget)
+            val account = accountsDao.getAccount(accountId)
+                ?.takeIf { it.createBy == current.User.id }
+                ?: throw FailedResult.Account.NotFound
+            val findRemoteFileByPath = fileDao.findRemoteFileByPath(path.pathSha256, account.id)
                 ?: throw FailedResult.Dir.TargetNotFound
-            if (!linkTarget.isDir) {
+            if (!findRemoteFileByPath.isDir) {
                 throw FailedResult.Dir.NotADir
             }
-            val targetPath = linkTarget.path.append(path.subPath(top.path.length))
-            val inlinkTarget = fileDao.findLinkedByPath(targetPath.pathSha256, linkTarget.accountId!!)
-                ?: throw FailedResult.Dir.TargetNotFound
-            // ^ findByParent
-            fileDao.findByParent(inlinkTarget.id)
+            fileDao.findByParent(findRemoteFileByPath.id)
         }
 
         return FileListRespDto(
@@ -185,7 +153,7 @@ class UserDirController(
                     type = it.clientType,
                     detail = when (it.clientType!!) {
                         ClientType.OneDrive ->
-                            onedriveFileDao.getReferenceById(it.id).let onedrive@{ byId ->
+                            oneDriveFileDao.getReferenceById(it.id).let onedrive@{ byId ->
                                 return@onedrive FileListRespDto.Item.OneDrive(
                                     webUrl = byId.webUrl,
                                     mimeType = byId.mimeType,
@@ -199,15 +167,15 @@ class UserDirController(
 
     @PostMapping("/api/user/file/delete")
     fun deleteItem(@RequestBody dto: DeleteDirReqDto): SampleResult {
-        val dir = fileDao.getLocalUserFile(dto.path, current.User.id)
-        deletionModule.doFileDeleteAction(dir.id)
+        val file = fileDao.getUserFile(dto.path, current.User.id)
+        deletionModule.doFileDeleteAction(file.id)
         return SampleResult
     }
 
     @PostMapping("/api/user/file/rename")
     fun renameItem(@RequestBody dto: RenameDirReqDto): SampleResult {
-        val dir = fileDao.getLocalUserFile(dto.path, current.User.id)
-        fileDao.rename(dir.id, dto.name)
+        val file = fileDao.getUserFile(dto.path, current.User.id)
+        fileDao.rename(file.id, dto.name)
         return SampleResult
     }
 }

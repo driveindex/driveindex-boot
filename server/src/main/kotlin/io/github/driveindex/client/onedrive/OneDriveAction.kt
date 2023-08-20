@@ -291,7 +291,7 @@ class OneDriveAction(
                 }
             }
             for (item in delta.value) {
-                if (item.file != null && item.file.hashes == null) {
+                if (item.name.isBlank() || (item.file != null && item.file.hashes == null)) {
                     continue
                 }
                 val duplicateCheck = oneDriveFileDao.findByAzureFileId(item.id, account.id)

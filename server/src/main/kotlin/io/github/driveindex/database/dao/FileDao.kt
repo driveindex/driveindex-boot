@@ -24,10 +24,13 @@ interface FileDao: JpaRepository<FileEntity, UUID> {
     fun rename(id: UUID, name: String)
 
     @Query("from FileEntity where pathHash=:pathHash and createBy=:createBy")
-    fun findVirtualByPath(pathHash: String, createBy: UUID): FileEntity?
+    fun findAnyFileByPathIntern(pathHash: String, createBy: UUID): FileEntity?
 
-    @Query("from FileEntity where pathHash=:pathHash and accountId=:account")
-    fun findLinkedByPath(pathHash: String, account: UUID): FileEntity?
+    @Query("from FileEntity where pathHash=:pathHash and createBy=:createBy and isRemote=:isRemote")
+    fun findFileByPathIntern(pathHash: String, createBy: UUID, isRemote: Boolean): FileEntity?
+
+    @Query("from FileEntity where pathHash=:pathHash and accountId=:account and isRemote=true")
+    fun findRemoteFileByPath(pathHash: String, account: UUID): FileEntity?
 
     @Query("from FileEntity where id=:parent")
     fun findByUUID(parent: UUID): FileEntity?
@@ -43,10 +46,11 @@ interface FileDao: JpaRepository<FileEntity, UUID> {
 }
 
 /**
- * 根据指定路径，寻找用户创建的本地目录，若指定目录为
+ * 返回用户创建的本地目录
  */
-fun FileDao.getLocalUserFile(path: CanonicalPath, createBy: UUID): FileEntity {
-    val target = findTopUserFile(path, createBy)
+fun FileDao.getUserFile(path: CanonicalPath, createBy: UUID): FileEntity {
+    val target: FileEntity = findFileByPathIntern(path.pathSha256, createBy, false)
+        ?: throw FailedResult.Dir.TargetNotFound
     if (path != target.path) {
         throw FailedResult.Dir.ModifyRemote
     }
@@ -56,10 +60,11 @@ fun FileDao.getLocalUserFile(path: CanonicalPath, createBy: UUID): FileEntity {
 /**
  * 根据指定路径，向上寻找由用户创建的软连接
  */
-fun FileDao.findTopUserFile(path: CanonicalPath, createBy: UUID): FileEntity {
-    var entity: FileEntity? = findVirtualByPath(path.pathSha256, createBy)
+fun FileDao.getTopUserFile(path: CanonicalPath, createBy: UUID): FileEntity {
+    var entity: FileEntity? = findAnyFileByPathIntern(path.pathSha256, createBy)
     while (entity != null && entity.isRemote) {
         entity = findByUUID(entity.parentId ?: break)
     }
-    return entity ?: throw FailedResult.Dir.TargetNotFound
+    return entity?.takeIf { it.linkTarget != null }
+        ?: throw FailedResult.Dir.TargetNotFound
 }

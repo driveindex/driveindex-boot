@@ -7,7 +7,7 @@ import io.github.driveindex.core.util.MD5_UPPER
 import io.github.driveindex.core.util.log
 import io.github.driveindex.database.dao.FileDao
 import io.github.driveindex.database.dao.UserDao
-import io.github.driveindex.database.dao.getLocalUserFile
+import io.github.driveindex.database.dao.getUserFile
 import io.github.driveindex.database.entity.FileEntity
 import io.github.driveindex.database.entity.UserEntity
 import io.github.driveindex.exception.FailedResult
@@ -52,7 +52,7 @@ class DBSetupModule(
         } else {
             for (userEntity in user.findAll()) {
                 try {
-                    file.getLocalUserFile(CanonicalPath.ROOT, userEntity.id)
+                    file.getUserFile(CanonicalPath.ROOT, userEntity.id)
                 } catch (e: FailedResult) {
                     file.save(FileEntity(
                         createBy = userEntity.id,

@@ -63,5 +63,5 @@ data class FileEntity(
     val isRemote: Boolean = false,
 
     @Column(name = "size")
-    var size: Long = 0,
+    val size: Long = 0,
 )
