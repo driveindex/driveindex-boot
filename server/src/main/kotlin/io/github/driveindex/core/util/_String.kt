@@ -18,8 +18,11 @@ fun String.isSimplifyChinese(): Boolean {
     return isChinese() && String(toByteArray(GB2312)) == this
 }
 
-val String.TO_BASE64: String get() {
-    return Base64.getEncoder().encodeToString(toByteArray(Charsets.UTF_8))
+val ByteArray.BASE64: String get() {
+    return Base64.getEncoder().encodeToString(this)
+}
+val String.BASE64: String get() {
+    return toByteArray(Charsets.UTF_8).BASE64
 }
 
 val String.ORIGIN_BASE64: String get() {

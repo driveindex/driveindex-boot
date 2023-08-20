@@ -14,7 +14,7 @@ interface AccountsDao: JpaRepository<AccountsEntity, UUID> {
     fun deleteByUUID(id: UUID)
 
     @Query("from AccountsEntity where id=:accountId")
-    fun getAccount(accountId: UUID): AccountsEntity
+    fun getAccount(accountId: UUID): AccountsEntity?
 
     @Query("from AccountsEntity where parentClientId=:clientId and displayName=:name")
     fun findByName(clientId: UUID, name: String): AccountsEntity?

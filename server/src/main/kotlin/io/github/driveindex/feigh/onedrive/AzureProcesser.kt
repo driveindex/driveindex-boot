@@ -12,7 +12,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.decodeFromJsonElement
-import lombok.extern.slf4j.Slf4j
 import org.springframework.stereotype.Component
 import java.nio.charset.StandardCharsets
 
@@ -21,7 +20,6 @@ import java.nio.charset.StandardCharsets
  * @author sgpublic
  * @Date 2022/8/14 19:18
  */
-@Slf4j
 @Component
 class AzureErrorDecoder : ErrorDecoder {
     private val defaultDecoder: ErrorDecoder.Default = ErrorDecoder.Default()

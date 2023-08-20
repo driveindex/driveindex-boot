@@ -2,6 +2,7 @@ package io.github.driveindex.database.entity
 
 import io.github.driveindex.client.ClientType
 import io.github.driveindex.core.util.CanonicalPath
+import io.github.driveindex.database.converter.CanonicalPathConverter
 import jakarta.persistence.*
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
@@ -44,8 +45,12 @@ data class FileEntity(
     @JdbcTypeCode(SqlTypes.VARCHAR)
     val parentId: UUID?,
 
-    @Column(name = "path")
+    @Convert(converter = CanonicalPathConverter::class)
+    @Column(name = "path", length = 2048)
     val path: CanonicalPath,
+
+    @Column(name = "path_hash", length = 256)
+    val pathHash: String,
 
     @Column(name = "is_dir")
     val isDir: Boolean,
@@ -53,6 +58,9 @@ data class FileEntity(
     @Column(name = "link_target")
     @JdbcTypeCode(SqlTypes.VARCHAR)
     val linkTarget: UUID? = null,
+
+    @Column(name = "is_remote")
+    val isRemote: Boolean = false,
 
     @Column(name = "size")
     var size: Long = 0,

@@ -98,6 +98,10 @@ class FailedResult private constructor(
         val UserInvalid get() = FailedResult(-150102, "用户名不符合规则")
         val NickInvalid get() = FailedResult(-150102, "用户昵称不符合规则")
     }
+
+    object Account {
+        val NotFound get() = FailedResult(-160101, "账号不存在")
+    }
 }
 
 @Serializable

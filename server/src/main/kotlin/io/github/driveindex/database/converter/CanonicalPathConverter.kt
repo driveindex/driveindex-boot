@@ -6,7 +6,7 @@ import jakarta.persistence.Converter
 
 @Converter(autoApply = true)
 class CanonicalPathConverter: AttributeConverter<CanonicalPath, String> {
-    override fun convertToDatabaseColumn(attribute: CanonicalPath): String = attribute.getPath()
+    override fun convertToDatabaseColumn(attribute: CanonicalPath): String = attribute.path
 
     override fun convertToEntityAttribute(dbData: String): CanonicalPath = CanonicalPath.of(dbData)
 }

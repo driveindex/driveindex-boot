@@ -9,6 +9,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import org.springframework.format.FormatterRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import java.security.MessageDigest
 import java.util.*
 
 /**
@@ -26,9 +27,11 @@ class CanonicalPath : Cloneable {
      * 获取当前规范路径文本
      * @return 规范路径文本
      */
-    private val path: String
-    fun getPath(): String {
-        return path
+    val path: String get() = mPath
+    private val mPath: String
+    val pathSha256: String by lazy {
+        MessageDigest.getInstance("SHA3-256")
+            .digest(path.toByteArray()).BASE64
     }
 
     private constructor(path: String) {
@@ -42,7 +45,7 @@ class CanonicalPath : Cloneable {
             }
             pathStack.push(file)
         }
-        this.path = generatePath()
+        mPath = generatePath()
     }
 
     /**
@@ -52,7 +55,7 @@ class CanonicalPath : Cloneable {
      */
     private constructor(pathStack: Stack<String>) {
         this.pathStack = pathStack
-        path = generatePath()
+        mPath = generatePath()
     }
 
     private fun generatePath(): String {
@@ -135,11 +138,11 @@ class CanonicalPath : Cloneable {
 
     /**
      * 返回当前规范路径文本
-     * @see CanonicalPath.path
+     * @see CanonicalPath.mPath
      * @return 规范路径文本
      */
     override fun toString(): String {
-        return path
+        return mPath
     }
 
     public override fun clone(): CanonicalPath {
@@ -185,7 +188,7 @@ class CanonicalPath : Cloneable {
 
     object Formatter: org.springframework.format.Formatter<CanonicalPath> {
         override fun print(target: CanonicalPath, locale: Locale): String {
-            return target.getPath()
+            return target.path
         }
 
         override fun parse(text: String, locale: Locale): CanonicalPath {
