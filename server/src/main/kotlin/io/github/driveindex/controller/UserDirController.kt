@@ -143,7 +143,9 @@ class UserDirController(
 
         return FileListRespDto(
             contentSize = findByParent.size,
-            content = findByParent.map {
+            content = findByParent.sortedBy {
+                it.name
+            }.map {
                 return@map FileListRespDto.Item(
                     name = it.name,
                     createAt = it.createAt,
