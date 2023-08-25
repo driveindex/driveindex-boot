@@ -85,18 +85,18 @@ class UserDirController(
         @Schema(description = "目标文件 ID")
         @RequestParam(name = "path")
         path: CanonicalPath,
-        @Schema(description = "排序规则", allowableValues = ["name", "size", "create_time", "modified_time"], defaultValue = "name")
-        @RequestParam(name = "sort_by", required = false)
-        sortBy: GetDirReqSort,
-        @Schema(description = "是否升序", defaultValue = "true")
-        @RequestParam(name = "asc", required = false)
-        asc: Boolean,
-        @Schema(description = "分页大小", defaultValue = "20")
-        @RequestParam(name = "page_size", required = false)
-        pageSize: Int,
-        @Schema(description = "页索引", defaultValue = "0")
-        @RequestParam(name = "page_index", required = false)
-        pageIndex: Int,
+//        @Schema(description = "排序规则", allowableValues = ["name", "size", "create_time", "modified_time"], defaultValue = "name")
+//        @RequestParam(name = "sort_by", required = false)
+//        sortBy: GetDirReqSort?,
+//        @Schema(description = "是否升序", defaultValue = "true")
+//        @RequestParam(name = "asc", required = false)
+//        asc: Boolean?,
+//        @Schema(description = "分页大小", defaultValue = "20")
+//        @RequestParam(name = "page_size", required = false)
+//        pageSize: Int?,
+//        @Schema(description = "页索引", defaultValue = "0")
+//        @RequestParam(name = "page_index", required = false)
+//        pageIndex: Int?,
         @Schema(description = "所属账号")
         @RequestParam(name = "account_id", required = false)
         accountId: UUID?,
