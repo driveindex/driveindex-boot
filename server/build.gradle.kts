@@ -61,7 +61,7 @@ dependencies {
     runtimeOnly("org.flywaydb:flyway-sqlserver:$flyway")
 
     implementation("org.ini4j:ini4j:0.5.4")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
     val jjwt = "0.11.5"
     implementation("io.jsonwebtoken:jjwt-api:$jjwt")

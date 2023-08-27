@@ -36,6 +36,7 @@ class UserConfController(
 
     private val deletionModule: DeletionModule,
 ) {
+    private val passwordRegex = "^(?![^a-zA-Z]+\$)(?!D+\$).{8,16}\$".toRegex()
     @Operation(summary = "修改密码")
     @GetMapping("/api/user/password")
     fun setPassword(@RequestBody dto: SetPwdReqDto): SampleResult {
@@ -43,8 +44,11 @@ class UserConfController(
         if (config.password != dto.oldPwd.SHA1) {
             throw FailedResult.UserSettings.PasswordNotMatched
         }
-        if (dto.newPwd.length < 6) {
-            throw FailedResult.UserSettings.PasswordLength
+        if (config.password == dto.newPwd.SHA1) {
+            throw FailedResult.UserSettings.PasswordMatched
+        }
+        if (!passwordRegex.matches(dto.newPwd)) {
+            throw FailedResult.UserSettings.PasswordFormat
         }
         current.User = config.also {
             it.password = dto.newPwd.SHA1
@@ -110,10 +114,10 @@ class UserConfController(
 
     @Operation(summary = "枚举 Client 下登录的账号")
     @GetMapping("/api/user/account")
-    fun listAccount(@RequestParam("client_id") clientId: KUUID): RespResult<List<AccountsDto<*>>> {
+    fun listAccount(@RequestParam("client_id") clientId: KUUID): RespResult<List<AccountsDto<out AccountDetail>>> {
         val client = clientsDao.getClient(clientId)
             ?: throw FailedResult.Client.NotFound
-        val list: ArrayList<AccountsDto<*>> = ArrayList()
+        val list: ArrayList<AccountsDto<out AccountDetail>> = ArrayList()
         for (entity in accountsDao.listByClient(client.id)) {
             list.add(AccountsDto(
                 id = entity.id,

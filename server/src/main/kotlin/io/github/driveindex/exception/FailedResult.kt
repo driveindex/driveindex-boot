@@ -49,8 +49,9 @@ class FailedResult private constructor(
 
     object UserSettings {
         val PasswordNotMatched get() = FailedResult(-100101, "密码不匹配")
-        val PasswordLength get() = FailedResult(-100101, "密码至少 6 位")
-        val DeltaTrackDuration get() = FailedResult(-100202, "文件同步间隔时间只能为正整数")
+        val PasswordMatched get() = FailedResult(-100102, "新旧密码不能一致")
+        val PasswordFormat get() = FailedResult(-100103, "密码需为 8 至 16 位且包含数字和字母的组合")
+        val DeltaTrackDuration get() = FailedResult(-100201, "文件同步间隔时间只能为正整数")
     }
 
     object Auth {

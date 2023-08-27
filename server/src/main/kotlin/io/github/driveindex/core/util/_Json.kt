@@ -23,6 +23,7 @@ val JsonGlobal = Json {
     explicitNulls = false
     useAlternativeNames = true
     ignoreUnknownKeys = true
+    decodeEnumsCaseInsensitive = true
 }
 
 fun jsonObjectOf(vararg contents: Pair<String, Any?>): JsonObject {

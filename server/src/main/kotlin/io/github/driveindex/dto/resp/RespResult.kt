@@ -1,9 +1,9 @@
 package io.github.driveindex.dto.resp
 
+import io.github.driveindex.core.util.JsonGlobal
 import jakarta.servlet.http.HttpServletResponse
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import io.github.driveindex.core.util.JsonGlobal
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import java.nio.charset.StandardCharsets
@@ -18,7 +18,6 @@ open class RespResult<T: @Serializable Any> internal constructor(
     val message: String = "success.",
     val data: T? = null
 )
-
 object SampleResult: RespResult<Unit>()
 
 fun <T: @Serializable Any> T.resp(): RespResult<T> {
