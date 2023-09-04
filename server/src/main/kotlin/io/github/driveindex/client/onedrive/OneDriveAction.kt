@@ -175,7 +175,7 @@ class OneDriveAction(
         val creation: ClientCreateOneDrive = JsonGlobal.decodeFromJsonElement(params)
 
         if (creation.tenantId.isBlank()) {
-            throw FailedResult.MissingBody("tenant_id", "String")
+            creation.tenantId = "common"
         }
         if (creation.azureClientId.isBlank()) {
             throw FailedResult.MissingBody("azure_client_id", "String")
@@ -359,7 +359,7 @@ class OneDriveAction(
         val azureClientId: String,
         val azureClientSecret: String,
         val endPoint: OneDriveClientEntity.EndPoint = OneDriveClientEntity.EndPoint.Global,
-        val tenantId: String = "common",
+        var tenantId: String = "common",
     )
 
     @Serializable
