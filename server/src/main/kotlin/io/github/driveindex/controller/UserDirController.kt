@@ -8,11 +8,11 @@ import io.github.driveindex.database.dao.getTopUserFile
 import io.github.driveindex.database.dao.getUserFile
 import io.github.driveindex.database.dao.onedrive.OneDriveFileDao
 import io.github.driveindex.database.entity.FileEntity
-import io.github.driveindex.dto.req.user.*
-import io.github.driveindex.dto.resp.RespResult
-import io.github.driveindex.dto.resp.SampleResult
-import io.github.driveindex.dto.resp.resp
-import io.github.driveindex.dto.resp.user.FileListRespDto
+import io.github.driveindex.dto.req.user.CreateDirReqDto
+import io.github.driveindex.dto.req.user.CreateLinkReqDto
+import io.github.driveindex.dto.req.user.DeleteDirReqDto
+import io.github.driveindex.dto.req.user.RenameDirReqDto
+import io.github.driveindex.dto.resp.FileListRespDto
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.module.Current
 import io.github.driveindex.module.DeletionModule
@@ -37,7 +37,7 @@ class UserDirController(
     private val deletionModule: DeletionModule,
 ) {
     @PostMapping("/api/user/file/dir")
-    fun createDir(@RequestBody dto: CreateDirReqDto): SampleResult {
+    fun createDir(@RequestBody dto: CreateDirReqDto) {
         val dir = fileDao.getUserFile(dto.parent, current.User.id)
 
         val mkdir = dto.parent.append(dto.name)
@@ -52,12 +52,10 @@ class UserDirController(
             isDir = true,
             clientType = null,
         ))
-
-        return SampleResult
     }
 
     @PostMapping("/api/user/file/link")
-    fun createLink(@RequestBody dto: CreateLinkReqDto): SampleResult {
+    fun createLink(@RequestBody dto: CreateLinkReqDto) {
         val target = fileDao.findByUUID(dto.target)
             ?: throw FailedResult.Dir.TargetNotFound
         val dir = fileDao.getUserFile(dto.parent, current.User.id)
@@ -76,8 +74,6 @@ class UserDirController(
             linkTarget = target.id,
             clientType = target.clientType,
         ))
-
-        return SampleResult
     }
 
     @GetMapping("/api/user/file/list")
@@ -100,7 +96,7 @@ class UserDirController(
         @Schema(description = "所属账号")
         @RequestParam(name = "account_id", required = false)
         accountId: UUID?,
-    ): RespResult<FileListRespDto> {
+    ): FileListRespDto {
         val findByParent: List<FileEntity> = if (accountId == null) {
             val findUserFileByPath = fileDao.findFileByPathIntern(path.pathSha256, current.User.id, false)
             if (findUserFileByPath != null) {
@@ -164,20 +160,18 @@ class UserDirController(
                     }
                 )
             }
-        ).resp()
+        )
     }
 
     @PostMapping("/api/user/file/delete")
-    fun deleteItem(@RequestBody dto: DeleteDirReqDto): SampleResult {
+    fun deleteItem(@RequestBody dto: DeleteDirReqDto) {
         val file = fileDao.getUserFile(dto.path, current.User.id)
         deletionModule.doFileDeleteAction(file.id)
-        return SampleResult
     }
 
     @PostMapping("/api/user/file/rename")
-    fun renameItem(@RequestBody dto: RenameDirReqDto): SampleResult {
+    fun renameItem(@RequestBody dto: RenameDirReqDto) {
         val file = fileDao.getUserFile(dto.path, current.User.id)
         fileDao.rename(file.id, dto.name)
-        return SampleResult
     }
 }

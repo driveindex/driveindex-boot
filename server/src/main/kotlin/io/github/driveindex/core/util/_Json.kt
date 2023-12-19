@@ -13,17 +13,43 @@ import kotlinx.serialization.json.*
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.KotlinSerializationJsonHttpMessageConverter
 import java.util.*
 
+private const val ClassDiscriminatorGlobal = "_dit"
 @OptIn(ExperimentalSerializationApi::class)
 val JsonGlobal = Json {
-    namingStrategy = JsonNamingStrategy.SnakeCase
     encodeDefaults = true
     explicitNulls = false
     useAlternativeNames = true
     ignoreUnknownKeys = true
     decodeEnumsCaseInsensitive = true
+    classDiscriminator = ClassDiscriminatorGlobal
+}
+
+inline fun <reified T: Any> Json.encodeWithoutClassDiscriminator(data: T): JsonElement {
+    return encodeToJsonElement(data)
+            .removeClassDiscriminator()
+}
+
+fun JsonElement.removeClassDiscriminator(): JsonElement {
+    return when (this) {
+        is JsonPrimitive -> this
+        is JsonArray -> buildJsonArray {
+            for (item in this@removeClassDiscriminator) {
+                add(item.removeClassDiscriminator())
+            }
+        }
+        is JsonObject -> buildJsonObject {
+            for ((key, value) in this@removeClassDiscriminator) {
+                if (key == ClassDiscriminatorGlobal) {
+                    continue
+                }
+                put(key, value.removeClassDiscriminator())
+            }
+        }
+    }
 }
 
 fun jsonObjectOf(vararg contents: Pair<String, Any?>): JsonObject {
@@ -42,12 +68,23 @@ fun jsonObjectOf(vararg contents: Pair<String, Any?>): JsonObject {
 }
 
 @Configuration
-class GsonConfig {
+class JsonConfig {
     @Bean
     fun customConverters(): HttpMessageConverters {
-        return HttpMessageConverters(true, listOf(
-            KotlinSerializationJsonHttpMessageConverter(JsonGlobal)
-        ))
+        val converters = HttpMessageConverters(true, emptySet())
+        val newList = LinkedList<HttpMessageConverter<*>>()
+        var added = false
+        for (converter in converters) {
+            if (converter is KotlinSerializationJsonHttpMessageConverter) {
+                if (!added) {
+                    newList.add(KotlinSerializationJsonHttpMessageConverter(JsonGlobal))
+                    added = true
+                }
+            } else {
+                newList.add(converter)
+            }
+        }
+        return HttpMessageConverters(false, newList)
     }
 }
 

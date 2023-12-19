@@ -24,7 +24,7 @@ class IAuthenticationProvider(
         authentication as UserPasswordToken
 
         val entity = user.getUserByUsername(authentication.principal)?.takeIf {
-                Objects.equals(it.password, authentication.credentials)
+            it.password == authentication.credentials
         } ?: throw UserException(FailedResult.Auth.WrongPassword)
 
         if (!entity.enable) {

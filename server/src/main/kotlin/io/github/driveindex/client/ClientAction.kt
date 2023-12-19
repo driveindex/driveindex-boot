@@ -19,8 +19,8 @@ import java.util.*
 import kotlin.reflect.KClass
 
 interface ClientAction {
-    fun loginUri(clientId: KUUID, redirectUri: String): RespResult<String>
-    fun loginRequest(params: JsonObject): RespResult<Unit>
+    fun loginUri(clientId: KUUID, redirectUri: String): String
+    fun loginRequest(params: JsonObject)
 
     val type: ClientType
     fun onConstruct() { }
@@ -29,8 +29,8 @@ interface ClientAction {
     fun edit(params: JsonObject, clientId: KUUID)
 
 
-    fun listFile(path: CanonicalPath, accountId: UUID): RespResult<JsonArray>
-    fun downloadFile(path: CanonicalPath, accountId: UUID): RespResult<String>
+    fun listFile(path: CanonicalPath, accountId: UUID): JsonArray
+    fun downloadFile(path: CanonicalPath, accountId: UUID): String
 
     fun needDelta(accountId: KUUID): Boolean
     fun delta(accountId: KUUID)
@@ -67,12 +67,12 @@ enum class ClientType(
     private val action: ClientAction by lazy { target.Bean }
     override val type: ClientType get() = action.type
 
-    override fun loginUri(clientId: KUUID, redirectUri: String): RespResult<String> {
+    override fun loginUri(clientId: KUUID, redirectUri: String): String {
         return action.loginUri(clientId, redirectUri)
     }
 
-    override fun loginRequest(params: JsonObject): RespResult<Unit> {
-        return action.loginRequest(params)
+    override fun loginRequest(params: JsonObject) {
+        action.loginRequest(params)
     }
 
     override fun create(name: String, params: JsonObject) {
@@ -83,10 +83,10 @@ enum class ClientType(
         action.edit(params, clientId)
     }
 
-    override fun listFile(path: CanonicalPath, accountId: UUID): RespResult<JsonArray> {
+    override fun listFile(path: CanonicalPath, accountId: UUID): JsonArray {
         return action.listFile(path, accountId)
     }
-    override fun downloadFile(path: CanonicalPath, accountId: UUID): RespResult<String> {
+    override fun downloadFile(path: CanonicalPath, accountId: UUID): String {
         return action.downloadFile(path, accountId)
     }
 

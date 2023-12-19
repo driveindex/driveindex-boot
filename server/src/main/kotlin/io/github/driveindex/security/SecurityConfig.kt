@@ -29,7 +29,11 @@ class SecurityConfig(
         if (ConfigManager.Debug) {
             if (environment.getProperty("spring.h2.console.enabled", Boolean::class.java, false)) {
                 // 若开启 h2-console 则允许 iframe
-                http.headers().frameOptions().disable()
+                http.headers { headers ->
+                    headers.frameOptions { frameOptions ->
+                        frameOptions.disable()
+                    }
+                }
             }
             registerCorsConfiguration("/api/**", CorsConfiguration().apply {
                 allowedHeaders = listOf(CorsConfiguration.ALL)
@@ -37,19 +41,27 @@ class SecurityConfig(
                 allowedOrigins = listOf(CorsConfiguration.ALL)
             })
         }
-        http.cors().configurationSource(corsConfigurationSource)
-        http.csrf().disable()
-        http.httpBasic().disable()
+        http.cors { cors ->
+            cors.configurationSource(corsConfigurationSource)
+        }
+        http.csrf { csrf ->
+            csrf.disable()
+        }
+        http.httpBasic { httpBasic ->
+            httpBasic.disable()
+        }
         http.addFilterBefore(password, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterAfter(jwt, IUsernamePasswordAuthenticationFilter::class.java)
-        http.authorizeHttpRequests()
-            .requestMatchers("/api/token_state").authenticated()
-            .requestMatchers("/api/admin/**").hasRole(UserRole.ADMIN.name)
-            .requestMatchers("/api/user/**").hasRole(UserRole.USER.name)
-            .anyRequest().permitAll()
-        http.exceptionHandling()
-            .accessDeniedHandler(accessDeniedHandler)
-            .authenticationEntryPoint(entryPoint)
+        http.authorizeHttpRequests { authorizeHttpRequests ->
+            authorizeHttpRequests.requestMatchers("/api/token_state").authenticated()
+                    .requestMatchers("/api/admin/**").hasRole(UserRole.ADMIN.name)
+                    .requestMatchers("/api/user/**").hasRole(UserRole.USER.name)
+                    .anyRequest().permitAll()
+        }
+        http.exceptionHandling { exceptionHandling ->
+            exceptionHandling.accessDeniedHandler(accessDeniedHandler)
+                    .authenticationEntryPoint(entryPoint)
+        }
         return http.build()
     }
 

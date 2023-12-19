@@ -1,6 +1,5 @@
 package io.github.driveindex.controller
 
-import io.github.driveindex.dto.resp.SampleResult
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -11,7 +10,5 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class HealthCheck {
     @GetMapping("/api/health")
-    fun checkHealth(): SampleResult {
-        return SampleResult
-    }
+    fun checkHealth() { }
 }

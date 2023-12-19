@@ -52,9 +52,11 @@ class IUsernamePasswordAuthenticationFilter(
         if ("POST" != request.method) {
             throw AuthenticationServiceException("Authentication method not supported: " + request.method)
         }
-        val content = String(request.inputStream.readAllBytes(), StandardCharsets.UTF_8)
-        val dto: LoginReqDto = JsonGlobal.decodeFromString(content)
-        val token = UserPasswordToken(dto.username, dto.password)
-        return authenticationManager.authenticate(token)
+        request.inputStream.use {
+            val content = String(it.readAllBytes(), StandardCharsets.UTF_8)
+            val dto: LoginReqDto = JsonGlobal.decodeFromString(content)
+            val token = UserPasswordToken(dto.username, dto.password)
+            return authenticationManager.authenticate(token)
+        }
     }
 }

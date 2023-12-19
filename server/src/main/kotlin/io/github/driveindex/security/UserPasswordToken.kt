@@ -42,17 +42,16 @@ class UserPasswordToken(
             throw IllegalStateException("token has not been authed yet")
         }
         val details = this.details as Details
-        Jwts.claims().let { claims ->
-            claims.issuer = Application.APPLICATION_BASE_NAME
-            claims[SecurityConfig.JWT_USERNAME] = principal
-            claims[SecurityConfig.JWT_TAG] = details.tag
-            return Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(details.now.asDate)
-                .setExpiration(Date(details.now + ConfigManager.TokenExpired * 1000))
+        return Jwts.builder()
+                .claims()
+                .issuer(Application.APPLICATION_BASE_NAME)
+                .add(SecurityConfig.JWT_USERNAME, principal)
+                .add(SecurityConfig.JWT_TAG, details.tag)
+                .and()
+                .issuedAt(details.now.asDate)
+                .expiration(Date(details.now + ConfigManager.TokenExpired * 1000))
                 .signWith(secretKey)
                 .compact()
-        }
     }
 
     data class Details(

@@ -7,8 +7,8 @@ import feign.codec.Encoder
 import feign.slf4j.Slf4jLogger
 import io.github.driveindex.Application
 import io.github.driveindex.core.ConfigManager
+import io.github.driveindex.core.util.JsonGlobal
 import io.github.driveindex.feigh.onedrive.AzureErrorDecoder
-import kotlinx.serialization.json.Json
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters
 import org.springframework.cloud.openfeign.FeignClientsConfiguration
 import org.springframework.cloud.openfeign.support.SpringDecoder
@@ -31,10 +31,7 @@ class FeignClientConfig(
             .encoder(encoder)
             .decoder(SpringDecoder {
                 HttpMessageConverters(true, listOf(
-                    KotlinSerializationJsonHttpMessageConverter(Json {
-                        ignoreUnknownKeys = true
-                        useAlternativeNames = true
-                    })
+                    KotlinSerializationJsonHttpMessageConverter(JsonGlobal)
                 ))
             })
             .contract(contract)

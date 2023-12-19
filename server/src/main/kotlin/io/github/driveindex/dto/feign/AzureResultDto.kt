@@ -81,9 +81,9 @@ data class AzureGraphDtoV2_Me_Drive_Root_Delta(
         @SerialName("size")
         val size: Long,
         @SerialName("webUrl")
-        val webUrl: String,
+        val webUrl: String? = null,
         @SerialName("parentReference")
-        val parentReference: ParentReference,
+        val parentReference: ParentReference? = null,
         @SerialName("folder")
         val folder: Unit? = null,
         @SerialName("file")
@@ -106,7 +106,7 @@ data class AzureGraphDtoV2_Me_Drive_Root_Delta(
             @Serializable
             data class Hashes(
                 @SerialName("quickXorHash")
-                val quickXorHash: String,
+                val quickXorHash: String? = null,
                 @SerialName("sha1Hash")
                 val sha1Hash: String? = null,
                 @SerialName("sha256Hash")

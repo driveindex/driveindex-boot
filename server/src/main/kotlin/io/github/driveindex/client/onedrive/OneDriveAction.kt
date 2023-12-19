@@ -14,9 +14,6 @@ import io.github.driveindex.database.entity.onedrive.OneDriveAccountEntity
 import io.github.driveindex.database.entity.onedrive.OneDriveClientEntity
 import io.github.driveindex.database.entity.onedrive.OneDriveFileEntity
 import io.github.driveindex.dto.feign.AzureGraphDtoV2_Me_Drive_Root_Delta
-import io.github.driveindex.dto.resp.RespResult
-import io.github.driveindex.dto.resp.SampleResult
-import io.github.driveindex.dto.resp.resp
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.feigh.onedrive.AzureAuthClient
 import io.github.driveindex.feigh.onedrive.getToken
@@ -41,7 +38,7 @@ class OneDriveAction(
     override fun loginUri(
         @RequestParam("client_id", required = true) clientId: UUID,
         @RequestParam("redirect_uri", required = true) redirectUri: String
-    ): RespResult<String> {
+    ): String {
         val client = getClient(clientId)
         oneDriveClientDao.getClient(clientId).let { entity ->
             val state = linkedMapOf<String, Any>(
@@ -57,13 +54,13 @@ class OneDriveAction(
                 "&redirect_uri=${URLEncoder.encode(redirectUri, Charsets.UTF_8)}" +
                 "&response_mode=query" +
                 "&scope=${AzureAuthClient.Scope.joinToString("%20")}" +
-                "&state=${state.joinToString("&").BASE64}").resp()
+                "&state=${state.joinToString("&").BASE64}")
         }
     }
 
     @Transactional
     @PostMapping("/api/user/login/request/onedrive")
-    override fun loginRequest(@RequestBody params: JsonObject): RespResult<Unit> {
+    override fun loginRequest(@RequestBody params: JsonObject) {
         val dto = JsonGlobal.decodeFromJsonElement<AccountLoginOneDrive>(params)
         val param = dto.state.ORIGIN_BASE64
             .split("&")
@@ -141,7 +138,7 @@ class OneDriveAction(
                 accountDao.save(it)
             }
 
-            return SampleResult
+            return
         }
 
         // TODO 重名时自动重命名
@@ -166,8 +163,6 @@ class OneDriveAction(
                 tokenExpire = token.expires,
             )
         )
-
-        return SampleResult
     }
 
     @Transactional
@@ -248,12 +243,12 @@ class OneDriveAction(
         }
     }
 
-    override fun listFile(path: CanonicalPath, accountId: UUID): RespResult<JsonArray> {
+    override fun listFile(path: CanonicalPath, accountId: UUID): JsonArray {
         val account = getAccount(accountId)
         TODO()
     }
 
-    override fun downloadFile(path: CanonicalPath, accountId: UUID): RespResult<String> {
+    override fun downloadFile(path: CanonicalPath, accountId: UUID): String {
         TODO()
     }
 
@@ -302,7 +297,7 @@ class OneDriveAction(
                     continue
                 }
                 val parent = oneDriveFileDao.findByAzureFileId(
-                    item.parentReference.id, account.id
+                    item.parentReference?.id ?: continue, account.id
                 )
                 val newId = duplicateCheck?.id ?: UUID.randomUUID()
                 if (item.folder != null) {
@@ -333,7 +328,7 @@ class OneDriveAction(
                     id = newId,
                     accountId = account.id,
                     fileId = item.id,
-                    webUrl = item.webUrl,
+                    webUrl = item.webUrl ?: continue,
                     mimeType = item.file?.mimeType ?: "directory",
                     quickXorHash = item.file?.hashes?.quickXorHash,
                     sha1Hash = item.file?.hashes?.sha1Hash,

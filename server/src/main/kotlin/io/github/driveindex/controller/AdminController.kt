@@ -4,11 +4,7 @@ import io.github.driveindex.database.dao.UserDao
 import io.github.driveindex.database.entity.UserEntity
 import io.github.driveindex.dto.req.admin.UserCreateRequestDto
 import io.github.driveindex.dto.req.admin.UserDeleteRequestDto
-import io.github.driveindex.dto.resp.RespResult
-import io.github.driveindex.dto.resp.SampleResult
-import io.github.driveindex.dto.resp.admin.CommonSettingsUserItemRespDto
-import io.github.driveindex.dto.resp.admin.FullSettingsRespDto
-import io.github.driveindex.dto.resp.resp
+import io.github.driveindex.dto.resp.*
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.module.DeletionModule
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -26,7 +22,7 @@ class AdminController(
     private val deletionModule: DeletionModule,
 ) {
     @PostMapping("/api/admin/user/create")
-    fun createUser(@RequestBody dto: UserCreateRequestDto): SampleResult {
+    fun createUser(@RequestBody dto: UserCreateRequestDto) {
         if (userDao.getUserByUsername(dto.username) != null) {
             throw FailedResult.User.UserFound
         }
@@ -38,11 +34,10 @@ class AdminController(
             role = dto.role,
             enable = dto.enable,
         ))
-        return SampleResult
     }
 
     @GetMapping("/api/admin/user")
-    fun getUsers(): RespResult<List<CommonSettingsUserItemRespDto>> {
+    fun getUsers(): List<CommonSettingsUserItemRespDto> {
         return userDao.findAll().map {
             CommonSettingsUserItemRespDto(
                 id = it.id,
@@ -52,7 +47,7 @@ class AdminController(
                 enable = it.enable,
                 corsOrigin = it.corsOrigin,
             )
-        }.resp()
+        }
     }
 
     @PostMapping("/api/admin/user/edit")
@@ -75,10 +70,9 @@ class AdminController(
     }
 
     @PostMapping("/api/admin/user/delete")
-    fun deleteUsers(@RequestBody dto: UserDeleteRequestDto): SampleResult {
+    fun deleteUsers(@RequestBody dto: UserDeleteRequestDto) {
         val user = userDao.findById(dto.userId).getOrNull()
             ?: throw FailedResult.AdminUser.UserNotFound
         deletionModule.doUserDeleteAction(user.id)
-        return SampleResult
     }
 }

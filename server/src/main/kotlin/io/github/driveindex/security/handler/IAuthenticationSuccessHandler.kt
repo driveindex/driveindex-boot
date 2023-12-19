@@ -1,6 +1,6 @@
 package io.github.driveindex.security.handler
 
-import io.github.driveindex.dto.resp.admin.LoginRespDto
+import io.github.driveindex.dto.resp.LoginRespDto
 import io.github.driveindex.dto.resp.write
 import io.github.driveindex.database.dao.UserDao
 import io.github.driveindex.security.UserPasswordToken
@@ -29,13 +29,13 @@ class IAuthenticationSuccessHandler(
         val entity = user.getUserByUsername(username)
             ?: throw IllegalStateException("user not found: $username")
 
-        response.write(LoginRespDto.serializer(), LoginRespDto(
+        response.write(LoginRespDto(
             username = entity.username,
             nick = entity.nick,
             auth = LoginRespDto.Auth(
                 token = authentication.createJwtToken(),
                 role = entity.role,
             )
-        ))
+        ), LoginRespDto.serializer())
     }
 }

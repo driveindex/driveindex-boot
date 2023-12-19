@@ -8,11 +8,7 @@ import io.github.driveindex.database.dao.ClientsDao
 import io.github.driveindex.database.dao.onedrive.OneDriveAccountDao
 import io.github.driveindex.database.dao.onedrive.OneDriveClientDao
 import io.github.driveindex.dto.req.user.*
-import io.github.driveindex.dto.resp.RespResult
-import io.github.driveindex.dto.resp.SampleResult
-import io.github.driveindex.dto.resp.admin.CommonSettingsRespDto
-import io.github.driveindex.dto.resp.resp
-import io.github.driveindex.dto.resp.user.*
+import io.github.driveindex.dto.resp.*
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.module.Current
 import io.github.driveindex.module.DeletionModule
@@ -39,7 +35,7 @@ class UserConfController(
     private val passwordRegex = "^(?![^a-zA-Z]+\$)(?!D+\$).{8,16}\$".toRegex()
     @Operation(summary = "修改密码")
     @GetMapping("/api/user/password")
-    fun setPassword(@RequestBody dto: SetPwdReqDto): SampleResult {
+    fun setPassword(@RequestBody dto: SetPwdReqDto) {
         val config = current.User
         if (config.password != dto.oldPwd.SHA1) {
             throw FailedResult.UserSettings.PasswordNotMatched
@@ -53,24 +49,23 @@ class UserConfController(
         current.User = config.also {
             it.password = dto.newPwd.SHA1
         }
-        return SampleResult
     }
 
     @Operation(summary = "常规设置")
     @GetMapping("/api/user/common")
-    fun getCommonSettings(): RespResult<CommonSettingsRespDto> {
+    fun getCommonSettings(): CommonSettingsRespDto {
         val config = current.User
         return CommonSettingsRespDto(
             nick = config.nick,
             corsOrigin = config.corsOrigin,
-        ).resp()
+        )
     }
 
     @Operation(summary = "常规设置")
     @PostMapping("/api/user/common")
     fun setCommonSettings(
         @RequestBody dto: CommonSettingsReqDto
-    ): SampleResult {
+    ) {
         current.User = current.User.also {
             dto.nick?.let { nick ->
                 if (nick.length > 50) {
@@ -82,14 +77,13 @@ class UserConfController(
                 it.corsOrigin = corsOrigin
             }
         }
-        return SampleResult
     }
 
 
     @Operation(summary = "枚举 Client 配置")
     @GetMapping("/api/user/client")
-    fun listClients(): RespResult<List<ClientsDto<out ClientDetail>>> {
-        val list: ArrayList<ClientsDto<out ClientDetail>> = ArrayList()
+    fun listClients(): List<ClientsDto<out ClientsDto.Detail>> {
+        val list: ArrayList<ClientsDto<out ClientsDto.Detail>> = ArrayList()
         for (entity in clientsDao.listByUser(current.User.id)) {
             list.add(ClientsDto(
                 id = entity.id,
@@ -100,7 +94,7 @@ class UserConfController(
                 detail = when (entity.type) {
                     ClientType.OneDrive ->
                         onedriveClientDao.getClient(entity.id).let {
-                            return@let OneDriveClientDetail(
+                            return@let ClientsDto.OneDriveClientDetail(
                                 clientId = it.clientId,
                                 tenantId = it.tenantId,
                                 endPoint = it.endPoint,
@@ -109,15 +103,15 @@ class UserConfController(
                 }
             ))
         }
-        return list.resp()
+        return list
     }
 
     @Operation(summary = "枚举 Client 下登录的账号")
     @GetMapping("/api/user/account")
-    fun listAccount(@RequestParam("client_id") clientId: KUUID): RespResult<List<AccountsDto<out AccountDetail>>> {
+    fun listAccount(@RequestParam("client_id") clientId: KUUID): List<AccountsDto<out AccountsDto.Detail>> {
         val client = clientsDao.getClient(clientId)
             ?: throw FailedResult.Client.NotFound
-        val list: ArrayList<AccountsDto<out AccountDetail>> = ArrayList()
+        val list: ArrayList<AccountsDto<out AccountsDto.Detail>> = ArrayList()
         for (entity in accountsDao.listByClient(client.id)) {
             list.add(AccountsDto(
                 id = entity.id,
@@ -128,47 +122,43 @@ class UserConfController(
                 detail = when (client.type) {
                     ClientType.OneDrive ->
                         onedriveAccountDao.getOneDriveAccount(entity.id).let {
-                            return@let OneDriveAccountDetail(
+                            return@let AccountsDto.OneDriveAccountDetail(
                                 azureUserId = it.azureUserId,
                             )
                         }
                 }
             ))
         }
-        return list.resp()
+        return list
     }
 
     @Operation(summary = "删除 Client 下登录的账号")
     @PostMapping("/api/user/account/delete")
-    fun deleteAccount(@RequestBody dto: AccountDeleteReqDto): SampleResult {
+    fun deleteAccount(@RequestBody dto: AccountDeleteReqDto) {
         deletionModule.doAccountDeleteAction(dto.accountId)
-        return SampleResult
     }
 
     @Operation(summary = "创建 Client")
     @PostMapping("/api/user/client")
-    fun createClient(@RequestBody dto: ClientCreateReqDto): SampleResult {
+    fun createClient(@RequestBody dto: ClientCreateReqDto) {
         if (dto.name.isBlank()) {
             throw FailedResult.MissingBody("name", "String")
         }
         dto.type.create(dto.name, dto.data)
-        return SampleResult
     }
 
     @Operation(summary = "修改 Client")
     @PostMapping("/api/user/client/edit")
-    fun editClient(@RequestBody dto: ClientEditReqDto): SampleResult {
+    fun editClient(@RequestBody dto: ClientEditReqDto) {
         dto.clientType.edit(dto.data, dto.clientId)
-        return SampleResult
     }
 
     @Operation(summary = "删除 Client")
     @PostMapping("/api/user/client/delete")
-    fun deleteClient(@RequestBody dto: ClientDeleteReqDto): SampleResult {
+    fun deleteClient(@RequestBody dto: ClientDeleteReqDto) {
         val client = clientsDao.getClient(dto.clientId)
             ?: throw FailedResult.Client.NotFound
         deletionModule.doClientDeleteAction(client.id)
-        return SampleResult
     }
 }
 

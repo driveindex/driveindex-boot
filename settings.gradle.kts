@@ -12,6 +12,6 @@ dependencyResolutionManagement {
 }
 
 
-rootProject.name = "driveindex-boot"
+rootProject.name = "driveindex-server"
 
 include("server")

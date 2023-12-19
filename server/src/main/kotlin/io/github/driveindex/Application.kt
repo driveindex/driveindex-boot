@@ -2,11 +2,17 @@ package io.github.driveindex
 
 import io.github.driveindex.configuration.FeignClientConfig
 import io.github.driveindex.core.ConfigManager
+import io.github.driveindex.core.util.log
 import jakarta.annotation.PostConstruct
+import kotlinx.serialization.json.Json
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters
 import org.springframework.cloud.openfeign.EnableFeignClients
 import org.springframework.context.ApplicationContext
+import org.springframework.http.converter.AbstractKotlinSerializationHttpMessageConverter
+import org.springframework.http.converter.json.KotlinSerializationJsonHttpMessageConverter
 import org.springframework.scheduling.annotation.EnableScheduling
 import java.util.*
 import kotlin.reflect.KClass
@@ -15,9 +21,22 @@ import kotlin.reflect.KClass
 @EnableScheduling
 @SpringBootApplication
 class Application {
+    @Autowired
+    private lateinit var converters: HttpMessageConverters
     @PostConstruct
-    fun setup() {
-
+    fun init() {
+        for (converter in converters.converters) {
+            if (converter !is KotlinSerializationJsonHttpMessageConverter) {
+                continue
+            }
+            val json = AbstractKotlinSerializationHttpMessageConverter::class.java
+                    .getDeclaredField("format")
+                    .also {
+                        it.isAccessible = true
+                    }
+                    .get(converter) as Json
+            log.debug("json.configuration: ${json.configuration}")
+        }
     }
 
     companion object {
@@ -44,13 +63,17 @@ class Application {
         }
 
         private fun setupConfig(args: Array<String>) {
+            var configPath: String? = null
             for (arg in args) {
                 if (arg.startsWith("--config=")) {
-                    ConfigManager.setConfigFile(arg.substring(9))
+                    configPath = arg.substring(9)
                     return
                 }
             }
-            ConfigManager.setConfigFile(null)
+            System.getenv("DRIVEINDEX_CONFIG")
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { configPath = it }
+            ConfigManager.setConfigFile(configPath)
         }
 
         inline fun <reified T> getBean(): T {
@@ -89,6 +112,11 @@ private class Bootstrap(clazz: Class<*>) {
         } else {
             properties["spring.profiles.active"] = "prod"
         }
+        return this
+    }
+
+    fun test(): Bootstrap {
+        properties["spring.profiles.active"] = "test"
         return this
     }
 

@@ -1,9 +1,7 @@
 package io.github.driveindex.controller
 
 import io.github.driveindex.dto.req.auth.LoginReqDto
-import io.github.driveindex.dto.resp.RespResult
-import io.github.driveindex.dto.resp.SampleResult
-import io.github.driveindex.dto.resp.admin.LoginRespDto
+import io.github.driveindex.dto.resp.LoginRespDto
 import io.github.driveindex.security.SecurityConfig
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -27,15 +25,13 @@ class LoginController {
         security = [SecurityRequirement(name = SecurityConfig.Header)]
     )
     @GetMapping("/api/token_state")
-    fun checkToken(): SampleResult {
-        return SampleResult
-    }
+    fun checkToken() { }
 
     @Operation(summary = "用户登陆", description = "使用密码登陆")
     @PostMapping("/api/login")
     fun login(
         @RequestBody dto: LoginReqDto
-    ): RespResult<LoginRespDto> {
+    ): LoginRespDto {
         throw BadCredentialsException("use authentication provider instead.")
     }
 }

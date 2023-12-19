@@ -28,7 +28,6 @@ springBoot {
 }
 
 dependencies {
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
@@ -37,33 +36,32 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
 
     implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-web") {
-        exclude("com.fasterxml.jackson.core:jackson-databind")
+        exclude("org.springframework.boot", "spring-boot-starter-json")
     }
     implementation("org.springframework.boot:spring-boot-starter-security")
 //    implementation("org.springframework.boot:spring-boot-starter-websocket")
 
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.1.0")
 
-//    implementation("com.dtflys.forest:forest-spring-boot-starter:1.5.32")
-    implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.1")
-
-    implementation("com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:4.0.0")
-    val springDoc = "1.6.11"
+    implementation("com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:4.2.0")
+    val springDoc = "1.7.0"
     implementation("org.springdoc:springdoc-openapi-security:$springDoc")
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
 
-    val flyway = "9.19.1"
+    val flyway = "10.3.0"
     runtimeOnly("org.flywaydb:flyway-core:$flyway")
     runtimeOnly("org.flywaydb:flyway-mysql:$flyway")
     runtimeOnly("org.flywaydb:flyway-sqlserver:$flyway")
 
     implementation("org.ini4j:ini4j:0.5.4")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
-    val jjwt = "0.11.5"
+    val jjwt = "0.12.3"
     implementation("io.jsonwebtoken:jjwt-api:$jjwt")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwt")
     runtimeOnly("io.jsonwebtoken:jjwt-gson:$jjwt")

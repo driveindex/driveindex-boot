@@ -18,11 +18,13 @@ import jakarta.servlet.ServletRequest
 import jakarta.servlet.ServletResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties.Http
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.GenericFilterBean
 import java.security.Key
 import java.util.*
+import javax.crypto.SecretKey
 
 
 /**
@@ -34,19 +36,21 @@ class JwtTokenAuthenticationFilter(
     private val user: UserDao
 ): GenericFilterBean() {
     private val parser: JwtParser by lazy {
-        val secretKey: Key = Keys.hmacShaKeyFor(ConfigManager.getTokenSecurityKey())
-        Jwts.parserBuilder().setSigningKey(secretKey).build()
+        val secretKey: SecretKey = Keys.hmacShaKeyFor(ConfigManager.getTokenSecurityKey())
+        Jwts.parser().verifyWith(secretKey).build()
     }
 
     override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
-        request as HttpServletRequest
-        response as HttpServletResponse
+        if (request !is HttpServletRequest || response !is HttpServletResponse) {
+            chain.doFilter(request, response)
+            return
+        }
 
         request.requestURI.let {
             if (it.startsWith("/api/login") ||
                 !(it.startsWith("/api/admin") ||
                         it.startsWith("/api/user") ||
-                        it.startsWith("/api/check_token"))) {
+                        it.startsWith("/api/token_state"))) {
                 chain.doFilter(request, response)
                 return
             }
@@ -60,7 +64,7 @@ class JwtTokenAuthenticationFilter(
         }
         val claims: Claims
         try {
-            claims = parser.parseClaimsJws(token).body
+            claims = parser.parseSignedClaims(token).payload
         } catch (e: FailedResult) {
             response.write(e)
             return
@@ -77,7 +81,6 @@ class JwtTokenAuthenticationFilter(
             onValidToken(claims)?.let {
                 SecurityContextHolder.getContext().authentication = it
                 chain.doFilter(request, response)
-                return
             }
         }
     }
