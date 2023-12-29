@@ -9,6 +9,7 @@ import io.github.driveindex.database.dao.ClientsDao
 import io.github.driveindex.database.dao.FileDao
 import io.github.driveindex.database.entity.AccountsEntity
 import io.github.driveindex.database.entity.ClientsEntity
+import io.github.driveindex.dto.resp.AccountCreateRespDto
 import io.github.driveindex.dto.resp.RespResult
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.module.Current
@@ -19,7 +20,7 @@ import java.util.*
 import kotlin.reflect.KClass
 
 interface ClientAction {
-    fun loginUri(clientId: KUUID, redirectUri: String): String
+    fun loginUri(clientId: KUUID, redirectUri: String): AccountCreateRespDto
     fun loginRequest(params: JsonObject)
 
     val type: ClientType
@@ -67,7 +68,7 @@ enum class ClientType(
     private val action: ClientAction by lazy { target.Bean }
     override val type: ClientType get() = action.type
 
-    override fun loginUri(clientId: KUUID, redirectUri: String): String {
+    override fun loginUri(clientId: KUUID, redirectUri: String): AccountCreateRespDto {
         return action.loginUri(clientId, redirectUri)
     }
 

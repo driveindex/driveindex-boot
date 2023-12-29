@@ -82,8 +82,8 @@ class UserConfController(
 
     @Operation(summary = "枚举 Client 配置")
     @GetMapping("/api/user/client")
-    fun listClients(): List<ClientsDto<out ClientsDto.Detail>> {
-        val list: ArrayList<ClientsDto<out ClientsDto.Detail>> = ArrayList()
+    fun listClients(): List<ClientsDto> {
+        val list: ArrayList<ClientsDto> = ArrayList()
         for (entity in clientsDao.listByUser(current.User.id)) {
             list.add(ClientsDto(
                 id = entity.id,
@@ -108,10 +108,10 @@ class UserConfController(
 
     @Operation(summary = "枚举 Client 下登录的账号")
     @GetMapping("/api/user/account")
-    fun listAccount(@RequestParam("client_id") clientId: KUUID): List<AccountsDto<out AccountsDto.Detail>> {
+    fun listAccount(@RequestParam("client_id") clientId: KUUID): List<AccountsDto> {
         val client = clientsDao.getClient(clientId)
             ?: throw FailedResult.Client.NotFound
-        val list: ArrayList<AccountsDto<out AccountsDto.Detail>> = ArrayList()
+        val list: ArrayList<AccountsDto> = ArrayList()
         for (entity in accountsDao.listByClient(client.id)) {
             list.add(AccountsDto(
                 id = entity.id,

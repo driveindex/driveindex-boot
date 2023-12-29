@@ -1,16 +1,13 @@
 package io.github.driveindex.dto.resp
 
 import io.github.driveindex.client.ClientType
-import io.github.driveindex.core.util.JsonGlobal
 import io.github.driveindex.core.util.KUUID
 import io.github.driveindex.database.entity.onedrive.OneDriveClientEntity
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.encodeToJsonElement
 
 @Serializable
-data class ClientsDto<T: ClientsDto.Detail>(
+data class ClientsDto(
     @SerialName("id")
     val id: KUUID,
     @SerialName("name")
@@ -22,20 +19,8 @@ data class ClientsDto<T: ClientsDto.Detail>(
     @SerialName("modify_at")
     val modifyAt: Long?,
     @SerialName("detail")
-    val detail: JsonElement,
+    val detail: Detail,
 ): RespResultData {
-    constructor(
-        id: KUUID,
-        name: String,
-        type: ClientType,
-        createAt: Long,
-        modifyAt: Long?,
-        detail: T,
-    ): this(
-        id, name, type, createAt, modifyAt,
-        JsonGlobal.encodeToJsonElement(Detail.serializer(), detail)
-    )
-
     @Serializable
     sealed interface Detail: RespResultData
 

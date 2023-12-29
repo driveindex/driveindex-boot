@@ -14,6 +14,7 @@ import io.github.driveindex.database.entity.onedrive.OneDriveAccountEntity
 import io.github.driveindex.database.entity.onedrive.OneDriveClientEntity
 import io.github.driveindex.database.entity.onedrive.OneDriveFileEntity
 import io.github.driveindex.dto.feign.AzureGraphDtoV2_Me_Drive_Root_Delta
+import io.github.driveindex.dto.resp.AccountCreateRespDto
 import io.github.driveindex.exception.FailedResult
 import io.github.driveindex.feigh.onedrive.AzureAuthClient
 import io.github.driveindex.feigh.onedrive.getToken
@@ -38,7 +39,7 @@ class OneDriveAction(
     override fun loginUri(
         @RequestParam("client_id", required = true) clientId: UUID,
         @RequestParam("redirect_uri", required = true) redirectUri: String
-    ): String {
+    ): AccountCreateRespDto {
         val client = getClient(clientId)
         oneDriveClientDao.getClient(clientId).let { entity ->
             val state = linkedMapOf<String, Any>(
@@ -48,7 +49,7 @@ class OneDriveAction(
                 "redirect_uri" to redirectUri,
             )
             state["sign"] = "${state.joinToSortedString("&")}${ConfigManager.TokenSecurityKey}".MD5_FULL
-            return ("${entity.endPoint.LoginHosts}/${entity.tenantId}/oauth2/v2.0/authorize?" +
+            return AccountCreateRespDto("${entity.endPoint.LoginHosts}/${entity.tenantId}/oauth2/v2.0/authorize?" +
                 "client_id=${entity.clientId}" +
                 "&response_type=code" +
                 "&redirect_uri=${URLEncoder.encode(redirectUri, Charsets.UTF_8)}" +
